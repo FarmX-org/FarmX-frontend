@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ✅ Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -9,33 +9,107 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+jspm_packages/
+web_modules/
+bower_components
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# ✅ Logs & Debugging
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ✅ Diagnostic Reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# vercel
-.vercel
+# ✅ Runtime Data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# typescript
+# ✅ Build & Compiled Files
+/build
+/.next
+/out
+.nuxt
+dist
+.nuxt
+.cache
+.parcel-cache
+.docusaurus
+.serverless/
+.fusebox/
+.dynamodb/
+
+# ✅ Testing & Coverage
+/coverage
+.nyc_output
+*.lcov
+
+# ✅ TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# ✅ REPL History
+.node_repl_history
+
+# ✅ IDE & Editor Files
+.DS_Store
+.vscode-test
+
+# ✅ Optional npm & Yarn Cache
+.npm
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ✅ Environment Variables & Config
+.env*
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# ✅ Temporary & Lock Files
+.lock-wscript
+*.tgz
+
+# ✅ Microbundle & Other Caches
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.eslintcache
+.stylelintcache
+
+# ✅ Miscellaneous
+.tern-port
+.grunt
+
+# ✅ Framework-Specific Files
+# Next.js
+.next
+out
+
+# Nuxt.js
+.nuxt
+dist
+
+# VuePress
+.vuepress/dist
+.temp
+
+# Gatsby
+.cache/
+# Uncomment the following line if using Gatsby instead of Next.js
+# public
+
+# Parcel.js
+.cache
+.parcel-cache
