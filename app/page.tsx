@@ -1,14 +1,13 @@
 "use client";
-
-import styles from "./page.module.css";
-import HomeComponent  from "./Home";
+import styles from "@/styles/page.module.css";
+import HomeComponent from "@/components/Home";
 
 export default function Home() {
   return (
     <div className={styles.page}>
-     <main style={{ height: "100vh" }}>
-      <HomeComponent  />
-    </main>
+      <main style={{ height: "100vh" }}>
+        <HomeComponent />
+      </main>
     </div>
   );
 }
