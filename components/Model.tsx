@@ -1,49 +1,38 @@
-"use client"; 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
+const MODEL_URL = "http://localhost:3000/api/model";
+
 const Model = () => {
-  const { scene } = useGLTF("/images/scenewithanimal.glb"); 
+  const { scene } = useGLTF(MODEL_URL); 
   const router = useRouter();
 
+  const optimizedScene = useMemo(() => scene.clone(), [scene]);
+
   useEffect(() => {
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        if (child.name === "Ground_barn_2_0") {
-          child.userData.link = "/";
-        }
+    optimizedScene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.name === "Ground_barn_2_0") {
+        child.userData.link = "/";
       }
     });
-  }, [scene]);
+  }, [optimizedScene]);
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
-    if (event.intersections.length > 0) {
-      const clickedObject = event.intersections[0].object;
-      if (clickedObject.userData.link) {
-        router.push(clickedObject.userData.link);
-      }
+    const clickedObject = event.intersections[0]?.object;
+    if (clickedObject?.userData?.link) {
+      router.push(clickedObject.userData.link);
     }
-  };
-
-  const handlePointerOver = () => {
-    document.body.style.cursor = "grabbing";
-  };
-
-  const handlePointerUp = () => {
-    document.body.style.cursor = "pointer";
   };
 
   return (
     <primitive
-      object={scene}
-      scale={[0.65, 0.65, 0.65]}
+      object={optimizedScene}
+      scale={[0.2, 0.2, 0.2]}
       position={[0, 4, 4]}
       onPointerDown={handlePointerDown}
-      onPointerOver={handlePointerOver}
-      onPointerUp={handlePointerUp}
     />
   );
 };

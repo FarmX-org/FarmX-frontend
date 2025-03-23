@@ -1,9 +1,10 @@
 import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { Sky } from "@react-three/drei";
+import { OrbitControls, Sky } from "@react-three/drei";
+import { Suspense } from "react";
 
 const Model = dynamic(() => import("../components/Model"), { ssr: false });
+
 
 const Home = () => {
   return (
@@ -17,12 +18,16 @@ const Home = () => {
         left: 0,
       }}
     >
-      <Canvas camera={{ position: [20, 30, 160], fov: 60, near: 0.1 }}>
+      <Canvas camera={{ position: [10, 15, 60], fov: 50, near: 0.05 }}>
         <ambientLight intensity={1.2} />
-        <directionalLight position={[5, 10, 5]} intensity={2} />
-        <Sky sunPosition={[100, 20, 100]} turbidity={20} rayleigh={0.8} mieCoefficient={0.009} mieDirectionalG={0.99} />
+        <directionalLight position={[5, 10, 5]} intensity={1.5} />
+        <Sky sunPosition={[100, 20, 100]} turbidity={8} rayleigh={1.0} />
+
+        <Suspense fallback={<div>Loading...</div>}>
         <Model />
-        <OrbitControls enableZoom={true} />
+        </Suspense>
+
+        <OrbitControls enableZoom enablePan enableRotate />
       </Canvas>
     </div>
   );
