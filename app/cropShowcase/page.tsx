@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from "react";
+import React, { useEffect,useState  } from "react";
 import { Cards } from "../../components/Cards";
 import Sidebar from "@/components/Sidebar";
 
@@ -31,14 +31,31 @@ interface Crop {
   harvestDate: string;
   quantity: number;
   available: boolean;
+  category: string;
 }
+
 
 const CropShowcase = () => {
   const cropsData: Crop[] = [
-    { imageSrc: "./images/Tomato.png", title: "Wheat", description: "High-quality wheat for bread and other uses.", price: 50, harvestDate: "2025-04-01", quantity: 100, available: true },
-    { imageSrc: "./images/Tomato.png", title: "Tomatoes", description: "Fresh, organic tomatoes grown locally.", price: 30, harvestDate: "2025-03-20", quantity: 50, available: true },
-    { imageSrc: "./images/Tomato.png", title: "Carrots", description: "Crisp and fresh carrots for all your meals.", price: 20, harvestDate: "2025-03-15", quantity: 0, available: false },
+    { imageSrc: "./images/Tomato.png", title: "Wheat", description: "High-quality wheat", price: 50, harvestDate: "2025-04-01", quantity: 100, available: true, category: "Grains" },
+    { imageSrc: "./images/Tomato.png", title: "Tomatoes", description: "Fresh, organic tomatoes", price: 30, harvestDate: "2025-03-20", quantity: 50, available: true, category: "Vegetables" },
+    { imageSrc: "./images/Tomato.png", title: "Carrots", description: "Crisp and fresh carrots", price: 20, harvestDate: "2025-03-15", quantity: 0, available: false, category: "Vegetables" },
   ];
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+
+  const filteredCrops = cropsData.filter((crop) => {
+    const matchesSearch = crop.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory ? crop.category === selectedCategory : true;
+    return matchesSearch && matchesCategory;
+  });
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("");
+  };
+  
 
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -58,7 +75,12 @@ const CropShowcase = () => {
 
   return (
     <Flex>
-      <Sidebar />
+      <Sidebar
+      onSearchChange={setSearchTerm}
+      onCategorySelect={setSelectedCategory}
+      selectedCategory={selectedCategory}
+      onResetFilters={handleResetFilters}
+       />
 
       <Box bg="white" minHeight="100vh" padding="20px" flex="1">
         <Button
@@ -117,7 +139,7 @@ const CropShowcase = () => {
 
 
         <SimpleGrid columns={[1, 2, 3, 4]} gap={5} mt={10}>
-          {cropsData.map((card, index) => (
+          {filteredCrops.map((card, index) => (
             <Cards
               key={index}
               imageSrc={card.imageSrc}
