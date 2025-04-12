@@ -15,7 +15,7 @@ const Model = () => {
   useEffect(() => {
     optimizedScene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.name === "Ground_barn_2_0") {
-        child.userData.link = "/";
+        child.userData.link = "/cropShowcase";
       }
     });
   }, [optimizedScene]);
