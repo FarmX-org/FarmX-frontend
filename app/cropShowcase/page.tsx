@@ -2,6 +2,9 @@
 import React, { useEffect,useState  } from "react";
 import { Cards } from "../../components/Cards";
 import Sidebar from "@/components/Sidebar";
+import { keyframes } from "@emotion/react";
+import { Image } from "@chakra-ui/react";
+
 
 import {
   Box,
@@ -24,8 +27,9 @@ import {
 import { MdAdd } from 'react-icons/md';
 
 interface Crop {
-  imageSrc: string;
-  title: string;
+  id: number;
+  imageUrl: string;
+  name: string;
   description: string;
   price: number;
   harvestDate: string;
@@ -33,21 +37,51 @@ interface Crop {
   available: boolean;
   category: string;
 }
-
+const bounce = keyframes`
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+`;
+const peekaboo = keyframes`
+  0%, 100% { transform: translateY(100%); opacity: 0.5; }
+  40% { transform: translateY(-20px); opacity: 1; }
+  60% { transform: translateY(-20px); opacity: 1; }
+`;
 
 const CropShowcase = () => {
-  const cropsData: Crop[] = [
-    { imageSrc: "./images/Tomato.png", title: "Wheat", description: "High-quality wheat", price: 50, harvestDate: "2025-04-01", quantity: 100, available: true, category: "Grains" },
-    { imageSrc: "./images/Tomato.png", title: "Tomatoes", description: "Fresh, organic tomatoes", price: 30, harvestDate: "2025-03-20", quantity: 50, available: true, category: "Vegetables" },
-    { imageSrc: "./images/Tomato.png", title: "Carrots", description: "Crisp and fresh carrots", price: 20, harvestDate: "2025-03-15", quantity: 0, available: false, category: "Vegetables" },
-  ];
+  
+  const [cropsData, setCropsData] = useState<Crop[]>([]);
+  const [showCactus, setShowCactus] = useState(false);
+
+  useEffect(() => {
+    fetch("http://localhost:8081/crops")
+      .then((res) => {
+        console.log("Response status:", res.status);
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data && Array.isArray(data)) {
+          setCropsData(data);
+        } else {
+          console.error("Invalid data format", data);
+        }
+      })
+      .catch((err) => console.error("Error fetching crops:", err));
+  }, []);
+  
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
 
   const filteredCrops = cropsData.filter((crop) => {
-    const matchesSearch = crop.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = crop.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory ? crop.category === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
@@ -75,6 +109,15 @@ const CropShowcase = () => {
 
   return (
     <Flex>
+      <Image
+    src="./images/farmer.png"
+    alt="Peekaboo Cactus"
+    position="fixed"
+    top="80px"
+    left="0px"
+    boxSize="150px"
+    zIndex={2}
+  />
       <Sidebar
       onSearchChange={setSearchTerm}
       onCategorySelect={setSelectedCategory}
@@ -129,7 +172,21 @@ const CropShowcase = () => {
     </ModalBody>
 
     <ModalFooter>
-      <Button colorScheme="green" mr={3}>
+      <Button colorScheme="green" mr={3}
+      onClick={() => {
+        onOpen();
+        setShowCactus(true); 
+        setTimeout(() => setShowCactus(false), 3000); 
+        onClose(); 
+        toast({
+          title: "Crop added!",
+          description: "New crop has been added successfully 🌱",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
+      }}
+      >
         Save
       </Button>
       <Button onClick={onClose}>Cancel</Button>
@@ -139,20 +196,47 @@ const CropShowcase = () => {
 
 
         <SimpleGrid columns={[1, 2, 3, 4]} gap={5} mt={10}>
-          {filteredCrops.map((card, index) => (
-            <Cards
-              key={index}
-              imageSrc={card.imageSrc}
-              title={card.title}
-              description={card.description}
-              price={card.price}
-              harvestDate={card.harvestDate}
-              Quntity={card.quantity}
-              available={card.available}
-            />
-          ))}
+        {filteredCrops.map((card, index) => (
+  <Cards
+    key={index}
+    imageSrc={card.imageUrl}
+    title={card.name}
+    description={card.description}
+    price={card.price}
+    harvestDate={card.harvestDate}
+    Quntity={card.quantity}
+    available={card.available}
+  />
+))}
+
         </SimpleGrid>
       </Box>
+      <Image
+      src="./images/cuteTree.png"
+      alt="Jumping Crop"
+      position="fixed"
+      bottom="20px"
+      right="20px"
+      boxSize="250px"
+      animation={`${bounce} 1.5s infinite`}
+      zIndex={100}
+    />
+      {showCactus && (
+  <Image
+    src="./images/cuteFlower.png"
+    alt="Peekaboo Cactus"
+    position="fixed"
+    bottom="-30px"
+    left="650px"
+    boxSize="200px"
+    zIndex={100}
+    animation={`${peekaboo} 8s ease-in-out`}
+    pointerEvents="none"
+  />
+)}
+
+
+
     </Flex>
   );
 };

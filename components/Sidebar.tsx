@@ -22,10 +22,10 @@ const Sidebar = ({
   onResetFilters: () => void;
 }) => {
   const categories = [
-    { label: "Vegetables", icon: "./images/food.png" },
-    { label: "Fruits", icon: "./images/food.png" },
-    { label: "Grains", icon: "./images/food.png" },
-    { label: "Herbs", icon: "./images/food.png" },
+    { label: "Vegetables", icon: "./images/vegetable1.png" },
+    { label: "Fruits", icon: "./images/fruit.png" },
+    { label: "Grains", icon: "./images/rice.png" },
+    { label: "Herbs", icon: "./images/rosemary.png" },
   ];
 
   return (
@@ -60,7 +60,7 @@ const Sidebar = ({
             _focus={{ bg: "gray.100", color : "green.500" }}
             onClick={() => onCategorySelect(cat.label)}
           >
-            <Image src={cat.icon} boxSize="20px" mb={1} alt={cat.label} />
+            <Image src={cat.icon} boxSize="40px" mb={1} alt={cat.label} />
             <Text fontSize="sm" textAlign="center">
               {cat.label}
             </Text>
