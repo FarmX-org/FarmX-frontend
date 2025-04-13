@@ -1,0 +1,61 @@
+/* SignUp.css */
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #ffffff; /* White background */
+}
+
+.signup-card {
+    background-color: #ffffff; /* White card */
+    padding: 2rem;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.signup-title {
+    font-size: 1.5rem;
+    color: #2D6A4F; /* Dark green color */
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control {
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd; /* Light border */
+}
+
+.btn-light-green {
+    background-color: #A8D5BA; /* Light green button */
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+}
+
+.btn-light-green:hover {
+    background-color: #90C89E; /* Darker green on hover */
+}
+
+.error-message, .success-message {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+a {
+    color: #2D6A4F; /* Dark green link color */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
