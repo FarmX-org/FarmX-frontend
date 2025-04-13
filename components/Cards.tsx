@@ -1,8 +1,19 @@
 'use client';
 
 import React from "react";
-import { Button, Image, Text, Box, Progress, Tooltip } from "@chakra-ui/react";
-import { MdEdit, MdDelete } from 'react-icons/md';
+import {
+  Box,
+  Image,
+  Text,
+  Progress,
+  Button,
+  Tooltip,
+  Badge,
+  Flex,
+  Stack,
+  useBreakpointValue,
+} from "@chakra-ui/react";
+import { MdEdit, MdDelete, MdLocalShipping } from 'react-icons/md';
 import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
@@ -13,7 +24,7 @@ interface CardsProps {
   description: string;
   price: number;
   harvestDate: string;
-  Quntity: number;
+  Quantity: number;
   available: boolean;
 }
 
@@ -23,90 +34,133 @@ export const Cards = ({
   description,
   price,
   harvestDate,
-  Quntity,
+  Quantity,
   available,
 }: CardsProps) => {
+  const responsiveMarginTop = useBreakpointValue({ base: 6, md: 10, lg: 24 });
+
   return (
     <MotionBox
       maxW="xs"
-      maxH="md"
       borderWidth="1px"
-      borderRadius="lg"
+      borderRadius="2xl"
       overflow="hidden"
-      bgColor="white"
-      mt="5"
+      mt={responsiveMarginTop}
+      px={4}
+      pb={5}
       boxShadow="lg"
-      transition="all 0.3s duration-.4s"
-      _hover={{ transform: "scale(1.05)", boxShadow: "xl" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }} 
+      _hover={{ transform: "scale(1.03)", boxShadow: "2xl" }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      position="relative"
+      bg="rgb(241, 245, 241)"
+
+
     >
-      <Image
-        src={imageSrc}
-        alt={title}
-        maxW="80%"
-        height="auto"
-        maxH={{ base: "130px", md: "150px", lg: "180px" }}
-        objectFit="contain"
-        mx="auto"
-        display="block"
-      />
+      <Badge
+        position="absolute"
+        top={3}
+        left={3}
+        px={3}
+        py={1}
+        borderRadius="full"
+        colorScheme={available ? "green" : "red"}
+        fontSize="0.7em"
+      >
+        {available ? "Available" : "Out of Stock"}
+      </Badge>
 
-      <Box p="4">
-        <Text fontWeight="bold" fontSize="md" color="gray.700">
-          {description}
-        </Text>
-
-        <Text fontSize="sm" color="gray.600" mt="2">
-          Harvest Date: <b>{harvestDate}</b>
-        </Text>
-
-        <Text fontSize="sm" color="gray.600" mt="2">
-          Quantity: <b>{Quntity} Kg</b>
-        </Text>
-
-        <Progress
-          value={Quntity}
-          max={100}
-          size="sm"
-          colorScheme={available ? "green" : "red"}
-          borderRadius="md"
-          mt={2}
+      <Flex justify="center" mt={4}>
+        <Image
+          src={imageSrc}
+          alt={title}
+          boxSize="120px"
+          objectFit="cover"
+          borderRadius="full"
+          border="4px solid white"
+          boxShadow="md"
         />
+      </Flex>
 
-        <Text fontSize="sm" color={available ? "green.500" : "red.500"} mt="2">
-          {available ? "Available ✅" : "Out of Stock ❌"}
-        </Text>
+      <Box pt={4}>
+        <Stack spacing={1}>
+          <Text fontSize="xl" fontWeight="bold" color="green.700" textAlign="center">
+            {title}
+          </Text>
 
-        <Text fontSize="lg" fontWeight="bold" mt="2" color="teal.600">
-          Price: {price} $
-        </Text>
+          <Text fontSize="sm" color="gray.600" textAlign="center">
+            {description}
+          </Text>
+
+          <Flex justify="space-between" mt={2}>
+            <Text fontSize="sm" color="gray.600">
+               <b>{harvestDate}</b>
+            </Text>
+            <Text fontSize="sm" color="gray.600">
+               <b>{Quantity} Kg</b>
+            </Text>
+          </Flex>
+
+          <Progress
+            value={Quantity}
+            max={100}
+            size="sm"
+            colorScheme={available ? "green" : "red"}
+            borderRadius="md"
+            mt={1}
+          />
+
+          <Text fontSize="md" fontWeight="bold" color="teal.600" mt={1}>
+            💰 {price}$
+          </Text>
+        </Stack>
       </Box>
 
-      <Box p="3" display="flex" justifyContent="center">
+      <Flex justify="center" gap={4} pt={4}>
         <Tooltip label="Delete Crop" hasArrow>
           <Button
             size="sm"
-            colorScheme="white"
-            color="green"
-            _hover={{ bg:"rgb(215, 237, 222)", transform: "scale(1.05)" }}
-            _active={{bg:"rgb(215, 237, 222)" }}
-            marginRight="30px"
+            color="red.500"
+            variant="ghost"
+            _hover={{ bg: "red.50", transform: "scale(1.1)" }}
             leftIcon={<MdDelete />}
-          />
+          >
+            Delete
+          </Button>
         </Tooltip>
 
         <Tooltip label="Edit Crop" hasArrow>
           <Button
             size="sm"
-            colorScheme="white"
-            color="green"
-            _hover={{ bg:"rgb(215, 237, 222)", transform: "scale(1.05)" }}
-            _active={{ bg: "rgb(215, 237, 222)" }}
+            color="green.600"
+            variant="ghost"
+            _hover={{ bg: "green.50", transform: "scale(1.1)" }}
             leftIcon={<MdEdit />}
-          />
+          >
+            Edit
+          </Button>
         </Tooltip>
-      </Box>
+
+
+        {available && (
+    <Tooltip label="Send to Store" hasArrow>
+    <Button
+      size="sm"
+      leftIcon={<MdLocalShipping />} 
+      color="green.600"
+      variant="ghost"
+      _hover={{ bg: "green.50", transform: "scale(1.1)" }}
+      onClick={() => {
+        console.log(`Sending ${title} to the store`);
+      }}
+    >
+      Send to Store
+    </Button>
+  </Tooltip>
+  
+  )}
+      </Flex>
     </MotionBox>
   );
 };

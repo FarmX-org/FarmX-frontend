@@ -1,21 +1,17 @@
-
+import { Inter } from "next/font/google";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Provider } from "@/components/ui/provider"
 import Navbar from "@/components/Navbar";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { ChakraProvider } from '@chakra-ui/react';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "FarmX",
-  description: "FarmX appliction",
+  description: "FarmX application",
 };
 
 export default function RootLayout({
@@ -25,11 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <Provider>
-      <Navbar />
-        {children}
-        </Provider>
+      <body className={`${inter.variable}`}>
+        <ChakraProvider>
+          <Navbar />
+          {children}
+        </ChakraProvider>
       </body>
     </html>
   );
