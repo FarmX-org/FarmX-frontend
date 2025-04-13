@@ -1,57 +1,33 @@
-"use client";
+import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import * as THREE from "three"; 
-import { ThreeEvent } from "@react-three/fiber";
-import {Sky} from "@react-three/drei";
-const Model = () => {
-  const { scene } = useGLTF("images/scenewithFarmer.glb");
-  const router = useRouter();
+import { OrbitControls, Sky } from "@react-three/drei";
+import { Suspense } from "react";
 
-  useEffect(() => {
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        if (child.name === "Ground_barn_2_0") {
-          child.userData.link = "/";
-        }
-      }
-    });
-  }, [scene]);
+const Model = dynamic(() => import("../components/Model"), { ssr: false });
 
-  const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
-    if (event.intersections.length > 0) {
-      const clickedObject = event.intersections[0].object;
-      if (clickedObject.userData.link) {
-        router.push(clickedObject.userData.link);
-      }
-    }
-  };
-
-  return (
-    <primitive
-      object={scene}
-      scale={[.65, .65, .65]}
-      position={[0, 4, 4]} 
-      onPointerDown={handlePointerDown}
-    />
-  );
-};
 
 const Home = () => {
   return (
-    <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "fixed", top: 0, left: 0 }}>
-      <Canvas
-        camera={{ position: [20, 30, 160], fov: 60 ,near: .1 }} 
-      >
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+        position: "fixed",
+        top: 0,
+        left: 0,
+      }}
+    >
+      <Canvas camera={{ position: [10, 15, 60], fov: 50, near: 0.05 }}>
         <ambientLight intensity={1.2} />
-        <directionalLight position={[5, 10, 5]} intensity={2} />
-        <Sky sunPosition={[100, 20, 100]} turbidity={20} rayleigh={.8} mieCoefficient={0.009} mieDirectionalG={0.99} />
+        <directionalLight position={[5, 10, 5]} intensity={1.5} />
+        <Sky sunPosition={[100, 20, 100]} turbidity={8} rayleigh={1.0} />
 
+        <Suspense fallback={<div>Loading...</div>}>
         <Model />
-        
-        <OrbitControls enableZoom={true} />
+        </Suspense>
+
+        <OrbitControls enableZoom enablePan enableRotate />
       </Canvas>
     </div>
   );

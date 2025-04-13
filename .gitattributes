@@ -1,0 +1,2 @@
+public/images/*.glb filter=lfs diff=lfs merge=lfs -text
+public/images/scenewithanimal.glb filter=lfs diff=lfs merge=lfs -text
