@@ -26,12 +26,25 @@ export const apiRequest = async (
 
   try {
     const response = await fetch(url, options);
+    const text = await response.text(); // ← نقرأ الرد كنص
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Request failed");
+      try {
+        const errorData = JSON.parse(text);
+        throw new Error(errorData.message || "Request failed");
+      } catch {
+        // الرد مو JSON
+        throw new Error(text);
+      }
     }
 
-    return await response.json();
+    try {
+      return JSON.parse(text); // نحاول نحوله JSON لو نجح
+    } catch {
+      // مو JSON؟ نرجعه كـ raw نص
+      return text;
+    }
+
   } catch (error) {
     console.error("API Request Error:", error);
     throw error;
