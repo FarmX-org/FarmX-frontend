@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 const MotionBox = motion(Box);
 
 interface CardsProps {
+  id: number;
   imageSrc: string;
   title: string;
   description: string;
@@ -26,9 +27,13 @@ interface CardsProps {
   harvestDate: string;
   Quantity: number;
   available: boolean;
+  onDelete: (id: number) => void;
+  onEdit: (id: number) => void;
+
 }
 
 export const Cards = ({
+  id,
   imageSrc,
   title,
   description,
@@ -36,6 +41,9 @@ export const Cards = ({
   harvestDate,
   Quantity,
   available,
+  onDelete,
+  onEdit
+  
 }: CardsProps) => {
   const responsiveMarginTop = useBreakpointValue({ base: 6, md: 10, lg: 24 });
 
@@ -49,14 +57,12 @@ export const Cards = ({
       px={4}
       pb={5}
       boxShadow="lg"
-      transition={{ duration: 0.3, ease: "easeInOut" }} 
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       _hover={{ transform: "scale(1.03)", boxShadow: "2xl" }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       position="relative"
       bg="rgb(241, 245, 241)"
-
-
     >
       <Badge
         position="absolute"
@@ -95,10 +101,10 @@ export const Cards = ({
 
           <Flex justify="space-between" mt={2}>
             <Text fontSize="sm" color="gray.600">
-               <b>{harvestDate}</b>
+              <b>{harvestDate}</b>
             </Text>
             <Text fontSize="sm" color="gray.600">
-               <b>{Quantity} Kg</b>
+              <b>{Quantity} Kg</b>
             </Text>
           </Flex>
 
@@ -125,6 +131,7 @@ export const Cards = ({
             variant="ghost"
             _hover={{ bg: "red.50", transform: "scale(1.1)" }}
             leftIcon={<MdDelete />}
+            onClick={() => onDelete(id)}
           >
             Delete
           </Button>
@@ -137,29 +144,28 @@ export const Cards = ({
             variant="ghost"
             _hover={{ bg: "green.50", transform: "scale(1.1)" }}
             leftIcon={<MdEdit />}
+            onClick={() => onEdit(id)}
           >
             Edit
           </Button>
         </Tooltip>
 
-
         {available && (
-    <Tooltip label="Send to Store" hasArrow>
-    <Button
-      size="sm"
-      leftIcon={<MdLocalShipping />} 
-      color="green.600"
-      variant="ghost"
-      _hover={{ bg: "green.50", transform: "scale(1.1)" }}
-      onClick={() => {
-        console.log(`Sending ${title} to the store`);
-      }}
-    >
-      Send to Store
-    </Button>
-  </Tooltip>
-  
-  )}
+          <Tooltip label="Send to Store" hasArrow>
+            <Button
+              size="sm"
+              leftIcon={<MdLocalShipping />}
+              color="green.600"
+              variant="ghost"
+              _hover={{ bg: "green.50", transform: "scale(1.1)" }}
+              onClick={() => {
+                console.log(`Sending ${title} to the store`);
+              }}
+            >
+              Send to Store
+            </Button>
+          </Tooltip>
+        )}
       </Flex>
     </MotionBox>
   );
