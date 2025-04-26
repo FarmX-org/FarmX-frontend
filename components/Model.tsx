@@ -17,6 +17,10 @@ const Model = () => {
       if (child instanceof THREE.Mesh && child.name === "Ground_barn_2_0") {
         child.userData.link = "/cropShowcase";
       }
+      else if(child instanceof THREE.Mesh && child.name === "Cube029_wall_texture_0"){
+        child.userData.link = "/store";
+      }
+      
     });
   }, [optimizedScene]);
 

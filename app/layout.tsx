@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: "FarmX application",
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,8 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable}`}>
+      <body className={`${inter.variable}`} >
         <ChakraProvider>
+          
           <Navbar />
           {children}
         </ChakraProvider>
