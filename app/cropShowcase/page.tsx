@@ -10,6 +10,11 @@ import {
 import { MdAdd } from 'react-icons/md';
 import { apiRequest } from "@/lib/api";
 import CropModal from "../../components/CropModal";
+import Lottie from "lottie-react";
+import farmGif from "../../public/images/farm.json";
+import flowerGif from "../../public/images/flower.json";
+
+
 
 interface Crop {
   id: number;
@@ -177,15 +182,16 @@ const CropShowcase = () => {
         onResetFilters={handleResetFilters}
       />
 
-      <Box bg="white" minHeight="100vh" padding="20px" flex="1">
-        <Button
+      <Box bgColor={"#FFFFFF"} minHeight="100vh" padding="20px" flex="1">
+
+      <Button
           colorScheme="green"
           color="white"
           variant="solid"
           mt={20}
           position="absolute"
-          right="30px"
-          top="30px"
+          left="100px"
+          top="90px"
           _hover={{ bg: "#00802b", transform: "scale(1.05)" }}
           leftIcon={<MdAdd />}
           onClick={() => {
@@ -209,6 +215,25 @@ const CropShowcase = () => {
           }}
         />
 
+  <Box
+  position={"relative"}
+  top={{ base: "10px", md: "20px", lg: "40px" }}
+  right={{ base: "10px", md: "20px", lg: "-70px" }}
+  width={{ base: "120px", md: "150px", lg: "900px" }} 
+  marginBottom={{ base: "0px", md: "0px", lg: "150px" }}
+
+  zIndex={100}
+>
+  <Lottie 
+    animationData={farmGif}
+    loop={true}
+    style={{ width: "100%", height: "auto",zIndex: -1 }}
+
+    
+  />
+</Box>
+
+
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={1} mt={10}>
           {filteredCrops.map((card) => (
             <Cards
@@ -219,7 +244,8 @@ const CropShowcase = () => {
               description={card.description}
               price={card.price}
               harvestDate={card.harvestDate}
-              Quantity={card.quantity}
+              variant="crop"
+              quantity ={card.quantity}
               available={card.available}
               onDelete={handleDelete}
               onEdit={() => {
@@ -230,17 +256,23 @@ const CropShowcase = () => {
           ))}
         </SimpleGrid>
       </Box>
+      <Box
+  position="fixed"
+  bottom={{ base: "10px", md: "20px", lg: "0px" }}
+  right={{ base: "0px", md: "20px", lg: "0px" }}
+  width={{ base: "120px", md: "150px", lg: "300px" }} 
 
-      <Image
-        src="./images/cuteTree.png"
-        alt="Jumping Crop"
-        position="fixed"
-        bottom={{ base: "10px", sm: "20px", md: "30px", lg: "0px" }}
-        right={{ base: "10px", sm: "20px", md: "50px", lg: "60px" }}
-        boxSize={{ base: "90px", sm: "120px", md: "150px", lg: "180px" }}
-        animation={`${bounce} 3s infinite`}
-        zIndex={100}
-      />
+  zIndex={100}
+>
+  <Lottie 
+    animationData={flowerGif}
+    loop={true}
+    style={{ width: "100%", height: "auto" }}
+
+    
+  />
+</Box>
+
 
       {showCactus && (
         <Image

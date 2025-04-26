@@ -50,9 +50,9 @@ const Sidebar = ({
   ];
 
   const SidebarContent = () => (
-    <Box w="250px" bg="rgb(241, 245, 241)" p={4} minH="100vh" position="relative">
+    <Box w="250px" bg="#FFFFFF" p={4} minH="100vh" position="relative" >
       <Image
-        src="./images/farmer.png"
+        src="./images/farmerr.png"
         alt="Jumping Crop"
         position="absolute"
         top="100px"
@@ -61,15 +61,17 @@ const Sidebar = ({
         zIndex={2}
       />
       <Input
-        placeholder="Search crops"
+        placeholder="Search"
         mb={4}
         mt="200px"
         onChange={(e) => onSearchChange(e.target.value)}
         borderRadius="lg"
       />
       <Button colorScheme="green" width="100%" mb={4} onClick={onResetFilters}>
-        View All Crops
+        View All
       </Button>
+
+      
 
       <Divider mb={3} />
       <Text fontSize="lg" fontWeight="bold" mb={2}>
