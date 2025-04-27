@@ -11,6 +11,9 @@ import { Cards } from "@/components/Cards";
 import { MdShoppingCart } from "react-icons/md";
 import { motion } from "framer-motion";
 import { Image } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
+
+
 
 interface Product {
   id: number;
@@ -29,6 +32,8 @@ const StorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [flyingItem, setFlyingItem] = useState<null | Product>(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
+
+  const router = useRouter();
 
   useEffect(() => {
     const tempProducts: Product[] = [
@@ -192,7 +197,9 @@ const StorePage = () => {
           boxShadow="lg"
           p={3}
         >
-          <MdShoppingCart size={30} color="green" />
+          <MdShoppingCart size={30} color="green" 
+          onClick={() => router.push("/cart")}
+          />
         </Box>
       </Box>
     </Flex>
