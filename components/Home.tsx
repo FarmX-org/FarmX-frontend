@@ -1,10 +1,9 @@
 import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
+import { FirstPersonControls, Sky } from "@react-three/drei"; 
 import { Suspense } from "react";
 
 const Model = dynamic(() => import("../components/Model"), { ssr: false });
-
 
 const Home = () => {
   return (
@@ -24,11 +23,19 @@ const Home = () => {
         <Sky sunPosition={[100, 20, 100]} turbidity={8} rayleigh={1.0} />
 
         <Suspense fallback={<div>Loading...</div>}>
-        <Model />
+          <Model />
         </Suspense>
 
-        <OrbitControls enableZoom enablePan enableRotate />
-      </Canvas>
+        <FirstPersonControls
+         movementSpeed={6} 
+        lookSpeed={0.04}
+        lookVertical={true}
+        constrainVertical={true}
+        verticalMin={1.0} 
+        verticalMax={2.0}
+         />
+
+        </Canvas>
     </div>
   );
 };

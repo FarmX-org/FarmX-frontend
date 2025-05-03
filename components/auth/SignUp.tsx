@@ -1,15 +1,30 @@
-import React, { useState } from "react";
-import "@styles/SignUp.css";
+"use client";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  Image,
+  useToast,
+  Flex,
+  Heading,
+} from "@chakra-ui/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation"; 
+import Lottie from "lottie-react";
+import signupGif from "../../public/images/signup.json";
 
 const SignUp = () => {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [city, setCity] = useState<string>("");
-  const [street, setStreet] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const toast = useToast();
+  const router = useRouter();  
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,114 +47,143 @@ const SignUp = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to register user");
-      }
+      if (!response.ok) throw new Error("Signup failed");
 
-      setSuccess("User registered successfully!");
-      setError("");
-      // Redirect to login page after successful registration
-      window.location.href = "/login"; // هذا سيعيد توجيه المستخدم إلى صفحة تسجيل الدخول
+      toast({
+        title: "Success!",
+        description: "User registered successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      router.push("/login"); 
     } catch (err) {
-      console.log(err);
-      setError("Error registering user");
-      setSuccess("");
+      toast({
+        title: "Error",
+        description: "Failed to register user",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-card shadow-lg">
-        <h2 className="signup-title text-center">Sign Up</h2>
-        <form onSubmit={handleSignUp}>
-          <div className="mb-3">
-            <label htmlFor="username" className="form-label">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="phone" className="form-label">
-              Phone
-            </label>
-            <input
-              type="text"
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="city" className="form-label">
-              City
-            </label>
-            <input
-              type="text"
-              id="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="street" className="form-label">
-              Street
-            </label>
-            <input
-              type="text"
-              id="street"
-              value={street}
-              onChange={(e) => setStreet(e.target.value)}
-              required
-              className="form-control"
-            />
-          </div>
-          <button type="submit" className="btn btn-light-green w-100">
+    <Flex
+      minH="100vh"
+      direction={{ base: "column", md: "row" }}
+      bgGradient="linear(to-r, #fdfbf4, #eaf6e0)"
+    >
+       <Box position="absolute" top="80px" left="10px" w="120px" h="120px" zIndex="10">
+        <Lottie
+         animationData={signupGif}
+          loop={true}
+           />
+      </Box>
+      <Flex flex="1" align="center" justify="center" p={8}>
+        <Box
+          bg="white"
+          p={8}
+          rounded="xl"
+          shadow="md"
+          w="full"
+          maxW="md"
+          border="1px solid #e2e8f0"
+        >
+          <Heading mb={6} textAlign="center" color="green.700">
             Sign Up
-          </button>
-        </form>
-        {error && <p className="text-danger text-center mt-3">{error}</p>}
-        {success && <p className="text-success text-center mt-3">{success}</p>}
-      </div>
-    </div>
+          </Heading>
+          <form onSubmit={handleSignUp}>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Full Name</FormLabel>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Phone</FormLabel>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 0791234567"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>City</FormLabel>
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Amman"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Street</FormLabel>
+                <Input
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  placeholder="e.g. Rainbow Street"
+                />
+              </FormControl>
+
+              <Button
+                type="submit"
+                colorScheme="green"
+                w="full"
+                mt={2}
+                rounded="full"
+              >
+                Sign Up
+              </Button>
+            </VStack>
+          </form>
+        </Box>
+      </Flex>
+
+      <Flex
+        flex="1"
+        align="center"
+        justify="center"
+        bg="#eaf6e0"
+        p={8}
+        display={{ base: "none", md: "flex" }}
+      >
+        <Image
+          src="/images/signup.png" 
+          alt="Farm Door"
+          borderRadius="xl"
+          shadow="lg"
+          maxH="60%"
+          objectFit="cover"
+        />
+      </Flex>
+    </Flex>
   );
 };
 
 export default SignUp;
-
