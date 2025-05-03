@@ -18,17 +18,27 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { FiMenu } from "react-icons/fi";
+import { MdAdd } from 'react-icons/md';
+import { FaChartBar } from 'react-icons/fa';
 
-const Sidebar = ({
-  onSearchChange,
-  onCategorySelect,
-  selectedCategory,
-  onResetFilters
-}: {
+interface SidebarProps {
   onSearchChange: (value: string) => void;
   onCategorySelect: (category: string) => void;
   selectedCategory: string;
   onResetFilters: () => void;
+  showCropActions?: boolean; 
+  onAddCrop?: () => void; 
+  onViewReport?: () => void;  
+}
+
+const Sidebar: React.FC<SidebarProps> = ({
+  onSearchChange,
+  onCategorySelect,
+  selectedCategory,
+  onResetFilters,
+  showCropActions = false,
+  onAddCrop,
+  onViewReport
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile, setIsMobile] = useState(false);
@@ -37,7 +47,7 @@ const Sidebar = ({
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    handleResize(); 
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -50,7 +60,7 @@ const Sidebar = ({
   ];
 
   const SidebarContent = () => (
-    <Box w="250px" bg="#FFFFFF" p={4} minH="100vh" position="relative" >
+    <Box w="250px" bg="#FFFFFF" p={4} minH="100vh" position="relative">
       <Image
         src="./images/farmerr.png"
         alt="Jumping Crop"
@@ -71,7 +81,20 @@ const Sidebar = ({
         View All
       </Button>
 
-      
+      {showCropActions && (
+        <>
+          <Button
+            colorScheme="green"
+            leftIcon={<MdAdd />}
+            width="100%"
+            mb={3}
+            onClick={onAddCrop}
+          >
+            Add Crop
+          </Button>
+
+        </>
+      )}
 
       <Divider mb={3} />
       <Text fontSize="lg" fontWeight="bold" mb={2}>
@@ -102,7 +125,21 @@ const Sidebar = ({
             </Text>
           </Button>
         ))}
+
+        
       </SimpleGrid>
+
+      <Button
+            colorScheme="green"
+            variant={"outline"}
+            leftIcon={<FaChartBar />}
+            mt={10}
+            width="100%"
+            mb={4}
+            onClick={onViewReport}
+          >
+            View Farm Report
+          </Button>
     </Box>
   );
 
