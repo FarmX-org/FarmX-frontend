@@ -15,14 +15,23 @@ import {
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
+  Tooltip
 } from '@chakra-ui/react';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { FiLogIn } from 'react-icons/fi';
+import { FaBrain } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+
+
 
 const Links = [
   { label: 'Home', href: '/' },
+  { label: 'Crops', href: '/cropShowcase' },
+  { label: 'Store', href: '/store' },
+  { label: 'Activity', href: '/activites' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
+
 ];
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -40,6 +49,7 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 
 export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const router = useRouter();
 
   return (
     <Box bg="green.500" px={4} boxShadow="sm" position="fixed" top="0" w="100%" zIndex="1000" >
@@ -54,15 +64,24 @@ export default function Navbar() {
               {link.label}
             </NavLink>
           ))}
+          
         </HStack>
 
-        <HStack spacing={4}>
+        <HStack spacing={4} color={'white'}>
+        <Tooltip label="Ai Suggestion " hasArrow >
+            <Link href="/dashboard" px={2}>
+              <FaBrain size={20} />
+            </Link>
+          </Tooltip>
           <Button
             leftIcon={<FiLogIn />}
             colorScheme="green"
             variant="solid"
             display={{ base: 'none', md: 'inline-flex' }}
-          >
+            onClick={() => {
+              router.push('/login');
+            }}>
+          
             Login
           </Button>
 

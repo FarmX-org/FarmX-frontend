@@ -13,7 +13,8 @@ import CropModal from "../../components/CropModal";
 import Lottie from "lottie-react";
 import farmGif from "../../public/images/farm.json";
 import flowerGif from "../../public/images/flower.json";
-
+import { FaChartBar } from 'react-icons/fa';
+import { useRouter } from "next/navigation";
 
 
 interface Crop {
@@ -50,6 +51,8 @@ const CropShowcase = () => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstFarmId = React.useRef<number | null>(null);
+  const router = useRouter();
+
   useEffect(() => {
     const fetchCrops = async () => {
       try {
@@ -175,33 +178,19 @@ const CropShowcase = () => {
 
   return (
     <Flex>
-      <Sidebar
-        onSearchChange={setSearchTerm}
-        onCategorySelect={setSelectedCategory}
-        selectedCategory={selectedCategory}
-        onResetFilters={handleResetFilters}
-      />
+     <Sidebar
+  onSearchChange={setSearchTerm}
+  onCategorySelect={setSelectedCategory}
+  selectedCategory={selectedCategory}
+  onResetFilters={handleResetFilters}
+  showCropActions={true} 
+  onAddCrop={onOpen}      
+  onViewReport={() => router.push("/productionReport")} 
+/>
 
       <Box bgColor={"#FFFFFF"} minHeight="100vh" padding="20px" flex="1">
 
-      <Button
-          colorScheme="green"
-          color="white"
-          variant="solid"
-          mt={20}
-          position="absolute"
-          left="100px"
-          top="90px"
-          _hover={{ bg: "#00802b", transform: "scale(1.05)" }}
-          leftIcon={<MdAdd />}
-          onClick={() => {
-            setSelectedCrop(null);
-            onOpen();
-          }}
-        >
-          Add Crop
-        </Button>
-
+        
         <CropModal
           isOpen={isOpen}
           onClose={onClose}
@@ -271,6 +260,7 @@ const CropShowcase = () => {
 
     
   />
+ 
 </Box>
 
 
