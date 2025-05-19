@@ -129,7 +129,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         
       </SimpleGrid>
 
-      <Button
+      {showCropActions && (
+        <>
+          <Button
             colorScheme="green"
             variant={"outline"}
             leftIcon={<FaChartBar />}
@@ -139,7 +141,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={onViewReport}
           >
             View Farm Report
-          </Button>
+            </Button>
+
+        </>
+      )}
+      
     </Box>
   );
 

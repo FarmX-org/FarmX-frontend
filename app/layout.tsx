@@ -1,8 +1,8 @@
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
-import { ChakraProvider } from '@chakra-ui/react';
-
+import { ChakraProvider } from "@chakra-ui/react";
+import Notifications from "@/components/Notifications";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   description: "FarmX application",
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,11 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable}`} >
+      <body className={inter.variable}>
         <ChakraProvider>
-          
           <Navbar />
-          {children}
+          <Notifications>{children}</Notifications>
         </ChakraProvider>
       </body>
     </html>
