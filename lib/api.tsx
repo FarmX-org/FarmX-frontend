@@ -1,7 +1,8 @@
 export const apiRequest = async (
   endPoint: string,
   method = "GET",
-  body: unknown = null
+  body: unknown = null,
+  isFormData = false
 ) => {
   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${endPoint}`;
 
@@ -10,10 +11,14 @@ export const apiRequest = async (
     throw new Error("You must log in first.");
   }
 
-  const headers = {
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
   };
+
+  // فقط نضيف Content-Type إذا لم يكن FormData
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const options: RequestInit = {
     method,
@@ -21,27 +26,25 @@ export const apiRequest = async (
   };
 
   if (body) {
-    options.body = JSON.stringify(body);
+    options.body = isFormData ? (body as FormData) : JSON.stringify(body);
   }
 
   try {
     const response = await fetch(url, options);
-    const text = await response.text(); // ← نقرأ الرد كنص
+    const text = await response.text();
 
     if (!response.ok) {
       try {
         const errorData = JSON.parse(text);
         throw new Error(errorData.message || "Request failed");
       } catch {
-        // الرد مو JSON
         throw new Error(text);
       }
     }
 
     try {
-      return JSON.parse(text); // نحاول نحوله JSON لو نجح
+      return JSON.parse(text);
     } catch {
-      // مو JSON؟ نرجعه كـ raw نص
       return text;
     }
 
