@@ -1,30 +1,37 @@
+"use client";
+
 import { Inter } from "next/font/google";
-import type { Metadata } from "next";
+import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { ChakraProvider } from "@chakra-ui/react";
 import Notifications from "@/components/Notifications";
+import Footer from "@/components/Footer";
+import "leaflet/dist/leaflet.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "FarmX",
-  description: "FarmX application",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const hideNotifications = pathname === "/login" || pathname === "/signup";
+
   return (
     <html lang="en">
       <body className={inter.variable}>
         <ChakraProvider>
           <Navbar />
-          <Notifications>{children}</Notifications>
+          {!hideNotifications ? (
+            <Notifications>{children}</Notifications>
+          ) : (
+            children
+          )}
+          <Footer />
         </ChakraProvider>
       </body>
     </html>
