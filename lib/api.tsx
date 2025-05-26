@@ -15,7 +15,6 @@ export const apiRequest = async (
     Authorization: `Bearer ${token}`,
   };
 
-  // فقط نضيف Content-Type إذا لم يكن FormData
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }

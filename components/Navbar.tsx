@@ -29,15 +29,6 @@ import { FaBrain } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const Links = [
-  { label: 'Home', href: '/' },
-  { label: 'Crops', href: '/cropShowcase' },
-  { label: 'Store', href: '/store' },
-  { label: 'Activity', href: '/activites' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-];
-
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link
     px={4}
@@ -55,21 +46,54 @@ export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
 
-  const [user, setUser] = useState<{ name: string; avatarUrl: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; avatarUrl: string; roles: string[] } | null>(null);
 
   useEffect(() => {
-    // تحققي من حالة الدخول من localStorage أو API
     const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    const rolesData = localStorage.getItem('roles');
+
+    if (userData && rolesData) {
+      setUser({
+        ...JSON.parse(userData),
+        roles: JSON.parse(rolesData),
+      });
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    localStorage.clear();
     setUser(null);
     router.push('/');
   };
+
+const isFarmer = user?.roles?.includes('ROLE_FARMER');
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+
+  const commonLinks = [
+    { label: 'Home', href: '/' },
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+  ];
+
+  const farmerLinks = [
+     { label: 'Crops', href: '/crops' },
+    { label: 'Store', href: '/store' },
+    { label: 'Activity', href: '/activites' },
+    { label: 'Farms', href: '/farms' },
+  ];
+
+  const adminLinks = [
+     { label: 'Crops', href: '/farms/[id]/crops' },
+    { label: 'Store', href: '/store' },
+    { label: 'Activity', href: '/activites' },
+    { label: 'Farms', href: '/farms' },
+  ];
+
+  const displayedLinks = [
+    ...commonLinks,
+    ...(isFarmer ? farmerLinks : []),
+    ...(isAdmin ? adminLinks : []),
+  ];
 
   return (
     <Box bg="green.500" px={4} boxShadow="sm" position="fixed" top="0" w="100%" zIndex="1000">
@@ -79,7 +103,7 @@ export default function Navbar() {
         </Box>
 
         <HStack as="nav" spacing={4} color="white" display={{ base: 'none', md: 'flex' }}>
-          {Links.map((link) => (
+          {displayedLinks.map((link) => (
             <NavLink key={link.label} href={link.href}>
               {link.label}
             </NavLink>
@@ -87,11 +111,13 @@ export default function Navbar() {
         </HStack>
 
         <HStack spacing={4} color="white">
-          <Tooltip label="Ai Suggestion" hasArrow>
-            <Link href="/dashboard" px={2}>
-              <FaBrain size={20} />
-            </Link>
-          </Tooltip>
+          {user && (
+            <Tooltip label="Ai Suggestion" hasArrow>
+              <Link href="/dashboard" px={2}>
+                <FaBrain size={20} />
+              </Link>
+            </Tooltip>
+          )}
 
           {user ? (
             <Menu>
@@ -139,7 +165,7 @@ export default function Navbar() {
           <DrawerCloseButton />
           <DrawerBody mt={10}>
             <VStack spacing={4} align="start">
-              {Links.map((link) => (
+              {displayedLinks.map((link) => (
                 <NavLink key={link.label} href={link.href}>
                   {link.label}
                 </NavLink>
@@ -150,7 +176,7 @@ export default function Navbar() {
                   <Button color={'green.500'} variant="outline" w="100%" onClick={() => router.push('/profile')}>
                     Profile
                   </Button>
-                  <Button  leftIcon={<FiLogOut />} colorScheme="red" variant="solid" w="100%" onClick={handleLogout}>
+                  <Button leftIcon={<FiLogOut />} colorScheme="red" variant="solid" w="100%" onClick={handleLogout}>
                     Logout
                   </Button>
                 </>

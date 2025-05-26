@@ -25,7 +25,7 @@ import useSound from 'use-sound';
 
 const flipSound = "/sounds/flip.wav";
 const addToCartSound = "/sounds/Add.mp3";
-const ratingSound = "/sounds/rating.mp3"; // ملف صوت للتقييم (اختياري)
+const ratingSound = "/sounds/rating.mp3"; 
 
 const MotionBox = motion(Box);
 
@@ -33,13 +33,23 @@ interface CardProps {
   id: number;
   imageSrc: string;
   title: string;
-  description?: string;
-  price: number;
   available: boolean;
   quantity?: number;
-  harvestDate?: string;
-  variant: 'product' | 'crop';
+  variant: 'product' | 'planted';
+
+  // product فقط
+  price?: number;
+  description?: string;
   onAddToCart?: (id: number, quantity: number) => void;
+
+  // planted فقط
+  plantedDate?: string;
+  estimatedHarvestDate?: string;
+  actualHarvestDate?: string;
+  notes?: string;
+  status?: string;
+  farmId?: number;
+
   onDelete?: (id: number) => void;
   onEdit?: (id: number) => void;
 }
@@ -52,18 +62,22 @@ export const Cards = ({
   price,
   available,
   quantity,
-  harvestDate,
   variant,
+  plantedDate,
+  estimatedHarvestDate,
+  actualHarvestDate,
+  notes,
+  status,
   onAddToCart,
   onDelete,
-  onEdit
+  onEdit,
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const responsiveWidth = useBreakpointValue({ base: "90%", md: "260px" });
   const responsiveMarginTop = useBreakpointValue({ base: 4, md: 6, lg: 8 });
   const [playFlip] = useSound(flipSound);
   const [playAddToCart] = useSound(addToCartSound);
-  const [playRating] = useSound(ratingSound); // صوت عند التقييم
+  const [playRating] = useSound(ratingSound);
   const [selectedQty, setSelectedQty] = useState(1);
   const [rating, setRating] = useState(0);
   const toast = useToast();
@@ -80,7 +94,7 @@ export const Cards = ({
 
   const handleRating = (star: number) => {
     setRating(star);
-    playRating(); // يشغل الصوت لما يقيم
+    playRating();
     toast({
       title: `Thank you for rating ${star}/5! 🌟`,
       status: "success",
@@ -111,17 +125,10 @@ export const Cards = ({
         width="100%"
         height="100%"
         sx={{ transformStyle: "preserve-3d" }}
-        animate={{
-          rotateY: isFlipped ? 180 : 0
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 30
-        }}
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-
-        {/* الوجه الأمامي */}
+        {/* Front Side */}
         <Box
           position="absolute"
           width="100%"
@@ -148,7 +155,6 @@ export const Cards = ({
           <Stack mt={4} spacing={1} textAlign="center">
             <Text fontWeight="bold" fontSize="lg" color="green.700">{title}</Text>
 
-            {/* النجوم التفاعلية */}
             {variant === 'product' && (
               <Flex justify="center" mt={2}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -167,11 +173,10 @@ export const Cards = ({
                 ))}
               </Flex>
             )}
-
           </Stack>
         </Box>
 
-        {/* الوجه الخلفي */}
+        {/* Back Side */}
         <Box
           position="absolute"
           width="100%"
@@ -185,31 +190,66 @@ export const Cards = ({
           border="1px solid #E2E8F0"
           bg={"#FFFFFF"}
         >
-          {variant === 'crop' && (
-            <Stack spacing={2} mt={6}>
-              <Text fontSize="xl" fontWeight="bold" color="green.700" textAlign="center">
-                {title}
-              </Text>
-              <Text fontSize="sm" color="gray.600" textAlign="center">
-                {description}
-              </Text>
+          {variant === 'planted' && (
+            <Stack spacing={2} mt={4} fontSize="sm" color="gray.700">
+              <Text><b>Status:</b> {status}</Text>
+              <Text><b>Quantity:</b> {quantity} units</Text>
+              <Text><b>Planted Date:</b> {new Date(plantedDate || "").toLocaleDateString()}</Text>
+              <Text><b>Estimated Harvest:</b> {estimatedHarvestDate ? new Date(estimatedHarvestDate).toLocaleDateString() : 'N/A'}</Text>
+              <Text><b>Actual Harvest:</b> {actualHarvestDate ? new Date(actualHarvestDate).toLocaleDateString() : 'Not yet'}</Text>
+              {notes && <Text><b>Notes:</b> {notes}</Text>}
 
-              <Flex justify="space-between">
-                <Text fontSize="sm" color="gray.600"><b>{harvestDate}</b></Text>
-                <Text fontSize="sm" color="gray.600"><b>{quantity} Kg</b></Text>
+              <Flex justify="center" gap={4} pt={2}>
+                <Tooltip label="Delete Crop" hasArrow>
+                  <Button
+                    size="sm"
+                    color="red.500"
+                    variant="ghost"
+                    _hover={{ bg: "red.50", transform: "scale(1.1)" }}
+                    leftIcon={<MdDelete />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete && onDelete(id);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </Tooltip>
+
+                <Tooltip label="Edit Crop" hasArrow>
+                  <Button
+                    size="sm"
+                    color="green.600"
+                    variant="ghost"
+                    _hover={{ bg: "green.50", transform: "scale(1.1)" }}
+                    leftIcon={<MdEdit />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit && onEdit(id);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </Tooltip>
+
+                {available && (
+                  <Tooltip label="Send to Store" hasArrow>
+                    <Button
+                      size="sm"
+                      leftIcon={<MdLocalShipping />}
+                      color="green.600"
+                      variant="ghost"
+                      _hover={{ bg: "green.50", transform: "scale(1.1)" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log(`Sending ${title} to the store`);
+                      }}
+                    >
+                      Send
+                    </Button>
+                  </Tooltip>
+                )}
               </Flex>
-
-              <Progress
-                value={quantity || 0}
-                max={100}
-                size="sm"
-                colorScheme={available ? "green" : "red"}
-                borderRadius="md"
-              />
-
-              <Text fontSize="md" fontWeight="bold" color="teal.600">
-                💰 {price}$
-              </Text>
             </Stack>
           )}
 
@@ -269,60 +309,6 @@ export const Cards = ({
                 💰 {price}$
               </Text>
             </Stack>
-          )}
-
-          {variant === 'crop' && (
-            <Flex justify="center" gap={4} pt={4}>
-              <Tooltip label="Delete Crop" hasArrow>
-                <Button
-                  size="sm"
-                  color="red.500"
-                  variant="ghost"
-                  _hover={{ bg: "red.50", transform: "scale(1.1)" }}
-                  leftIcon={<MdDelete />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete && onDelete(id);
-                  }}
-                >
-                  Delete
-                </Button>
-              </Tooltip>
-
-              <Tooltip label="Edit Crop" hasArrow>
-                <Button
-                  size="sm"
-                  color="green.600"
-                  variant="ghost"
-                  _hover={{ bg: "green.50", transform: "scale(1.1)" }}
-                  leftIcon={<MdEdit />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit && onEdit(id);
-                  }}
-                >
-                  Edit
-                </Button>
-              </Tooltip>
-
-              {available && (
-                <Tooltip label="Send to Store" hasArrow>
-                  <Button
-                    size="sm"
-                    leftIcon={<MdLocalShipping />}
-                    color="green.600"
-                    variant="ghost"
-                    _hover={{ bg: "green.50", transform: "scale(1.1)" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log(`Sending ${title} to the store`);
-                    }}
-                  >
-                    Send
-                  </Button>
-                </Tooltip>
-              )}
-            </Flex>
           )}
         </Box>
       </MotionBox>

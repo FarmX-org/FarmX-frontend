@@ -23,7 +23,7 @@ const SignUp = () => {
     city: "",
     street: "",
     email: "",
-    role: "",
+    role: "Farmer",
   });
 
   const toast = useToast();
@@ -34,42 +34,53 @@ const SignUp = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    });
 
-      if (!response.ok) {
+    if (!response.ok) {
+      const contentType = response.headers.get("content-type");
+      let errorMessage = "Signup failed";
+
+      if (contentType && contentType.includes("application/json")) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Signup failed");
+        errorMessage = errorData.message || errorMessage;
+      } else {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
       }
 
-      toast({
-        title: "Account created!",
-        description: "You can now log in.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-
-      router.push("/login");
-
-    } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: error.message || "Something went wrong.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      throw new Error(errorMessage);
     }
-  };
+
+    toast({
+      title: "Account created!",
+      description: "You can now log in.",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    router.push("/login");
+
+  } catch (error: any) {
+    toast({
+      title: "Sign up failed",
+      description: error.message || "Something went wrong.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+
 
   return (
     <Flex minH="100vh" align="center" justify="center" bg="gray.50" p={4}>
@@ -108,12 +119,13 @@ const SignUp = () => {
               <Input type="email" name="email" value={form.email} onChange={handleChange} />
             </FormControl>
             <FormControl isRequired>
-              <FormLabel>Role</FormLabel>
-              <Select name="role" value={form.role} onChange={handleChange}>
-                <option value="Farmer">Farmer</option>
-                <option value="Customer">Customer</option>
-              </Select>
-            </FormControl>
+  <FormLabel>Role</FormLabel>
+  <Select name="role" value={form.role} onChange={handleChange}>
+    <option value="Farmer">Farmer</option>
+    <option value="Consumer">Consumer</option>
+  </Select>
+</FormControl>
+
             <Button type="submit" colorScheme="green" w="full" rounded="full">
               Sign Up
             </Button>

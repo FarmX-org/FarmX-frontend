@@ -42,6 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile, setIsMobile] = useState(false);
+  const [localSearch, setLocalSearch] = useState(""); // 💡 local state
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,17 +53,22 @@ const Sidebar: React.FC<SidebarProps> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    onSearchChange(localSearch); // 🔁 sync with parent
+  }, [localSearch]);
+
+
   const categories = [
-    { label: "Vegetables", icon: "./images/vegetable1.png" },
-    { label: "Fruits", icon: "./images/fruit.png" },
-    { label: "Grains", icon: "./images/rice.png" },
-    { label: "Herbs", icon: "./images/rosemary.png" },
+    { label: "Vegetables", icon: "/images/vegetable1.png" },
+    { label: "Fruits", icon: "/images/fruit.png" },
+    { label: "Grains", icon: "/images/rice.png" },
+    { label: "Herbs", icon: "/images/rosemary.png" },
   ];
 
   const SidebarContent = () => (
     <Box w="250px" bg="#FFFFFF" p={4} minH="100vh" position="relative">
       <Image
-        src="./images/farmerr.png"
+        src="/images/farmerr.png"
         alt="Jumping Crop"
         position="absolute"
         top="100px"
@@ -71,12 +77,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         zIndex={2}
       />
       <Input
-        placeholder="Search"
-        mb={4}
-        mt="200px"
-        onChange={(e) => onSearchChange(e.target.value)}
-        borderRadius="lg"
-      />
+  placeholder="Search"
+  mb={4}
+  mt="200px"
+  value={localSearch}
+  onChange={(e) => setLocalSearch(e.target.value)}
+  borderRadius="lg"
+/>
+
       <Button colorScheme="green" width="100%" mb={4} onClick={onResetFilters}>
         View All
       </Button>
