@@ -28,6 +28,7 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +40,8 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
+      console.log("Login response data:", data);
+
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
@@ -46,10 +49,12 @@ const LoginPage = () => {
 
       const token = data.accessToken;
       const roles = data.roles;
+      const farmId = data.farmId;
 
       if (!token) {
-        throw new Error("Token not received");
-      }
+  throw new Error("Token not received");
+}
+
 
       localStorage.setItem("token", token);
       localStorage.setItem("roles", JSON.stringify(roles));
@@ -57,6 +62,7 @@ const LoginPage = () => {
       localStorage.setItem("user", JSON.stringify({
   name: data.username || username,
   avatarUrl: data.avatarUrl || "https://ui-avatars.com/api/?name=" + (data.username || username),
+  
 }));
 
 

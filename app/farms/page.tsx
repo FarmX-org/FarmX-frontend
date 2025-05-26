@@ -106,28 +106,36 @@ const FarmListPage = () => {
               <CardHeader>
                 <Heading size="md">{farm.farmName}</Heading>
               </CardHeader>
-              <CardBody>
-                <Stack spacing={2}>
-               <Text>🌿 Farm Name: {farm.name}</Text>
+             <CardBody>
+  <Stack spacing={2}>
+    <Text>🌿 Farm Name: {farm.name}</Text>
+    <Text>🌿 Area: {farm.areaSize} dunum</Text>
+    <Text>📍 {farm.longitude}</Text>
+    <Flex gap={3} mt={4} wrap="wrap">
+      <Button
+        colorScheme="green"
+        onClick={() => router.push(`/farms/${farm.id}/crops`)}
+      >
+        View Crops
+      </Button>
+      <Button
+        colorScheme="green"
+        variant="outline"
+        onClick={() => handleEditFarm(farm.id)}
+      >
+        Edit
+      </Button>
+      <Button
+        colorScheme="red"
+        variant="outline"
+        onClick={() => setDeletingFarmId(farm.id)}
+      >
+        Delete
+      </Button>
+    </Flex>
+  </Stack>
+</CardBody>
 
-                  <Text>🌿 Area: {farm.areaSize} dunum</Text>
-                <Text>📍 {farm.longitude}</Text>
-                  <Flex gap={3} mt={4}>
-                    <Button
-                      colorScheme="green"
-                       variant="outline"
-                      onClick={() => setDeletingFarmId(farm.id)}
-                    >
-                      Delete
-                    </Button>
-                    <Button colorScheme="green"
-variant="outline" 
-onClick={() => handleEditFarm(farm.id)}>
-                      Edit
-                    </Button>
-                  </Flex>
-                </Stack>
-              </CardBody>
             </Card>
           ))}
         </SimpleGrid>

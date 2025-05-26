@@ -1,32 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton,
   ModalBody, ModalFooter, Input, FormControl, FormLabel,
-  Select, Grid, GridItem, Button, Box, Image, useToast
+  Grid, GridItem, Button, Box, Image, useToast, Select
 } from "@chakra-ui/react";
 
+interface BaseCrop {
+  id: number;
+  name: string;
+  category: string;
+}
 
 interface CropModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedCrop: any | null;
-  onSave: (crop: any) => void; 
+  onSave: (crop: any) => void;
+  farmId?: number | null;
+  allCrops: BaseCrop[]; 
 }
 
 const CropModal: React.FC<CropModalProps> = ({
   isOpen,
   onClose,
   selectedCrop,
-  onSave
+  onSave,
+  farmId,
+  allCrops
 }) => {
   const toast = useToast();
-  const [cropData, setCropData] = React.useState<any>({
+
+  const [cropData, setCropData] = useState<any>({
+    cropId: "",
     name: "",
     category: "",
-    price: 0,
     quantity: 0,
-    description: "",
-    harvestDate: "",
+    status: "planted",
+    plantedDate: "",
+    estimatedHarvestDate: "",
+    actualHarvestDate: "",
+    notes: "",
     imageUrl: "",
     available: true,
     farmId: null,
@@ -34,21 +47,28 @@ const CropModal: React.FC<CropModalProps> = ({
 
   useEffect(() => {
     if (selectedCrop) {
-      setCropData(selectedCrop);
+      setCropData({
+        ...selectedCrop,
+        cropId: selectedCrop.cropId || selectedCrop.id,
+        farmId: selectedCrop.farmId || farmId,
+      });
     } else {
       setCropData({
+        cropId: "",
         name: "",
         category: "",
-        price: 0,
         quantity: 0,
-        description: "",
-        harvestDate: "",
+        status: "planted",
+        plantedDate: "",
+        estimatedHarvestDate: "",
+        actualHarvestDate: "",
+        notes: "",
         imageUrl: "",
         available: true,
-        farmId: null,
+        farmId: farmId ?? null,
       });
     }
-  }, [selectedCrop, isOpen]);
+  }, [selectedCrop, isOpen, farmId]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,22 +88,32 @@ const CropModal: React.FC<CropModalProps> = ({
       });
     }
   };
+
   const handleSave = () => {
-    if (!cropData.name || !cropData.category || !cropData.harvestDate) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill all required fields.",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-  
-    onSave(cropData);
-    onClose();
+  const cropIdNumber = Number(cropData.cropId);
+
+  if (!cropData.cropId || isNaN(Number(cropData.cropId)) || !cropData.plantedDate) {
+    toast({
+      title: "Missing fields",
+      description: "Please select a crop and set planted date.",
+      status: "warning",
+      duration: 3000,
+      isClosable: true,
+    });
+    return;
+  }
+
+  const finalCropData = {
+    ...cropData,
+    cropId: cropIdNumber, 
+    farmId: cropData.farmId || farmId,
   };
-  
+
+  onSave(finalCropData);
+  onClose();
+};
+
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -93,64 +123,88 @@ const CropModal: React.FC<CropModalProps> = ({
         <ModalBody>
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             <GridItem colSpan={2}>
-              <FormControl>
-                <FormLabel>Crop Name</FormLabel>
-                <Input
-                  value={cropData.name}
-                  onChange={(e) => setCropData({ ...cropData, name: e.target.value })}
-                  placeholder="e.g. Tomatoes"
-                />
+              <FormControl isRequired>
+                <FormLabel>Crop</FormLabel>
+               <Select
+  placeholder="Select a crop"
+  value={cropData.cropId}
+  onChange={(e) => {
+  const selectedId = Number(e.target.value);
+  if (isNaN(selectedId)) return; // ignore invalid input
+  const selected = allCrops.find(c => c.id === selectedId);
+  if (!selected) return; // crop not found, do nothing
+  setCropData({
+    ...cropData,
+    cropId: selected.id,
+    name: selected.name,
+    category: selected.category,
+  });
+}}
+
+>
+
+                  {allCrops.map(crop => (
+                    <option key={crop.id} value={crop.id}>
+                      {crop.name} ({crop.category})
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
             </GridItem>
 
             <FormControl>
-              <FormLabel>Price ($)</FormLabel>
-              <Input
-                type="number"
-                value={cropData.price}
-                onChange={(e) => setCropData({ ...cropData, price: Number(e.target.value) })}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Quantity (Kg)</FormLabel>
+              <FormLabel>Quantity (units)</FormLabel>
               <Input
                 type="number"
                 value={cropData.quantity}
-                onChange={(e) => setCropData({ ...cropData, quantity: Number(e.target.value) })}
+                onChange={(e) =>
+                  setCropData({ ...cropData, quantity: Number(e.target.value) })
+                }
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel>Harvest Date</FormLabel>
+              <FormLabel>Planted Date</FormLabel>
               <Input
                 type="date"
-                value={cropData.harvestDate}
-                onChange={(e) => setCropData({ ...cropData, harvestDate: e.target.value })}
+                value={cropData.plantedDate}
+                onChange={(e) =>
+                  setCropData({ ...cropData, plantedDate: e.target.value })
+                }
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel>Category</FormLabel>
-              <Select
-                placeholder="Select category"
-                value={cropData.category}
-                onChange={(e) => setCropData({ ...cropData, category: e.target.value })}
-              >
-                <option value="Vegetables">Vegetables</option>
-                <option value="Fruits">Fruits</option>
-                <option value="Grains">Grains</option>
-                <option value="Herbs">Herbs</option>
-              </Select>
+              <FormLabel>Estimated Harvest Date</FormLabel>
+              <Input
+                type="date"
+                value={cropData.estimatedHarvestDate}
+                onChange={(e) =>
+                  setCropData({ ...cropData, estimatedHarvestDate: e.target.value })
+                }
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Actual Harvest Date</FormLabel>
+              <Input
+                type="date"
+                value={cropData.actualHarvestDate}
+                onChange={(e) =>
+                  setCropData({ ...cropData, actualHarvestDate: e.target.value })
+                }
+              />
             </FormControl>
 
             <GridItem colSpan={2}>
               <FormControl>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Notes</FormLabel>
                 <Input
-                  value={cropData.description}
-                  onChange={(e) => setCropData({ ...cropData, description: e.target.value })}
-                  placeholder="Brief description of the crop"
+                  value={cropData.notes}
+                  onChange={(e) =>
+                    setCropData({ ...cropData, notes: e.target.value })
+                  }
+                  placeholder="Extra notes about this crop"
                 />
               </FormControl>
             </GridItem>
