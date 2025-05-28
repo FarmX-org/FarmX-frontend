@@ -45,7 +45,7 @@ const FarmFormPage = () => {
   const [locationName, setLocationName] = useState("");
   const [locationCoords, setLocationCoords] = useState<[number, number] | null>(null);
   const [soilType, setSoilType] = useState("");
-  const [licenseFile, setLicenseFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const toast = useToast();
@@ -57,18 +57,20 @@ const FarmFormPage = () => {
   };
 
   useEffect(() => {
-    if (isEditMode) {
-      setLoading(true);
-      apiRequest(`/farms/${id}`)
-        .then((data) => {
-          setFarmName(data.name || "");
-          setFarmArea(data.areaSize !== undefined ? data.areaSize.toString() : "");
-          setLocationName(data.locationName || "");
-          setSoilType(data.soil_type || "");
-          if (data.latitude && data.longitude) {
-            setLocationCoords([data.latitude, data.longitude]);
-          }
-        })
+     if (isEditMode) {
+    setLoading(true);
+    apiRequest(`/farms/${id}`)
+      .then((data) => {
+        setFarmName(data.name || "");
+        setFarmArea(data.areaSize !== undefined ? data.areaSize.toString() : "");
+        setSoilType(data.soilType || "");
+
+        if (data.latitude && data.longitude) {
+          setLocationCoords([data.latitude, data.longitude]);
+          setLocationName(`${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`);
+        }
+
+      })
         .catch((error) => {
           toast({
             title: "Failed to load farm data",
@@ -104,24 +106,32 @@ const FarmFormPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", farmName);
-    formData.append("areaSize", farmArea);
-    formData.append("locationName", locationName);
-    formData.append("soil_type", soilType);
-    if (locationCoords) {
-      formData.append("latitude", locationCoords[0].toString());
-      formData.append("longitude", locationCoords[1].toString());
-    }
-    if (licenseFile) {
-      formData.append("license_document", licenseFile);
-    }
-
     setLoading(true);
 
     try {
+      let base64Image: string | null = null;
+
+      if (imageFile) {
+        base64Image = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+      }
+
+      const payload = {
+        name: farmName,
+        areaSize: parseFloat(farmArea),
+        soil_type: soilType,
+        locationName: locationName,
+        licenseDocumentUrl: base64Image,
+        latitude: locationCoords?.[0],
+        longitude: locationCoords?.[1],
+      };
+
       if (isEditMode) {
-        await apiRequest(`/farms/${id}`, "PUT", formData, true);
+        await apiRequest(`/farms/${id}`, "PUT", payload);
         toast({
           title: "Farm updated successfully",
           status: "success",
@@ -129,7 +139,7 @@ const FarmFormPage = () => {
           isClosable: true,
         });
       } else {
-        await apiRequest("/farms", "POST", formData, true);
+        await apiRequest("/farms", "POST", payload);
         toast({
           title: "Farm added successfully",
           status: "success",
@@ -137,6 +147,7 @@ const FarmFormPage = () => {
           isClosable: true,
         });
       }
+
       router.push("/farms");
     } catch (error: any) {
       toast({
@@ -221,8 +232,8 @@ const FarmFormPage = () => {
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>License Document</FormLabel>
-                  <Input type="file" onChange={(e) => setLicenseFile(e.target.files?.[0] || null)} />
+                  <FormLabel>Farm Image</FormLabel>
+                  <Input type="file" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                 </FormControl>
 
                 <FormControl>

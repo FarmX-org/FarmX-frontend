@@ -5,26 +5,24 @@ export const apiRequest = async (
   isFormData = false
 ) => {
   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${endPoint}`;
-
   const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("You must log in first.");
-  }
+  if (!token) throw new Error("You must log in first.");
 
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-  };
+  Authorization: `Bearer ${token}`,
+};
 
-  if (!isFormData) {
-    headers["Content-Type"] = "application/json";
-  }
+if (!isFormData) {
+  headers["Content-Type"] = "application/json";
+}
+
 
   const options: RequestInit = {
     method,
     headers,
   };
 
-  if (body) {
+  if (method !== "GET" && method !== "HEAD") {
     options.body = isFormData ? (body as FormData) : JSON.stringify(body);
   }
 
@@ -46,7 +44,6 @@ export const apiRequest = async (
     } catch {
       return text;
     }
-
   } catch (error) {
     console.error("API Request Error:", error);
     throw error;
