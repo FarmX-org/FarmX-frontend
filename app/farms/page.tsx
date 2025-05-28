@@ -101,43 +101,53 @@ const FarmListPage = () => {
         <Text>No farms found. Add your first farm!</Text>
       ) : (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-          {farms.map((farm) => (
-            <Card key={farm.id} shadow="md" border="1px solid #ddd">
-              <CardHeader>
-                <Heading size="md">{farm.farmName}</Heading>
-              </CardHeader>
-             <CardBody>
-  <Stack spacing={2}>
-    <Text>🌿 Farm Name: {farm.name}</Text>
-    <Text>🌿 Area: {farm.areaSize} dunum</Text>
-    <Text>📍 {farm.longitude}</Text>
-    <Flex gap={3} mt={4} wrap="wrap">
-      <Button
-        colorScheme="green"
-        onClick={() => router.push(`/farms/${farm.id}/crops`)}
-      >
-        View Crops
-      </Button>
-      <Button
-        colorScheme="green"
-        variant="outline"
-        onClick={() => handleEditFarm(farm.id)}
-      >
-        Edit
-      </Button>
-      <Button
-        colorScheme="red"
-        variant="outline"
-        onClick={() => setDeletingFarmId(farm.id)}
-      >
-        Delete
-      </Button>
-    </Flex>
-  </Stack>
-</CardBody>
+        {farms.map((farm) => (
+  <Card key={farm.id} shadow="md" border="1px solid #ddd">
+   
+    <CardBody>
+      <Stack spacing={2}>
+        {farm.licenseDocumentUrl && (
+          <Box mb={3} maxH="200px" overflow="hidden" borderRadius="md">
+            <img
+              src={farm.licenseDocumentUrl}
+              alt={`${farm.name} License Document`}
+              style={{ width: "100%", objectFit: "cover", borderRadius: "8px" }}
+            />
+          </Box>
+        )}
+        
+        <Text>🌿 Farm Name: {farm.name}</Text>
+        <Text>🌿 Area: {farm.areaSize} dunum</Text>
+        <Text>📍 Longitude: {farm.longitude}</Text>
+        <Text>📍 Latitude: {farm.latitude}</Text>
 
-            </Card>
-          ))}
+        <Flex gap={3} mt={4} wrap="wrap">
+          <Button
+            colorScheme="green"
+            onClick={() => router.push(`/farms/${farm.id}/crops`)}
+          >
+            View Crops
+          </Button>
+          <Button
+            colorScheme="green"
+            variant="outline"
+            onClick={() => handleEditFarm(farm.id)}
+          >
+            Edit
+          </Button>
+          <Button
+            colorScheme="red"
+            variant="outline"
+            onClick={() => setDeletingFarmId(farm.id)}
+          >
+            Delete
+          </Button>
+        </Flex>
+      </Stack>
+    </CardBody>
+  </Card>
+))}
+
         </SimpleGrid>
       )}
 
