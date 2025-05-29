@@ -6,6 +6,7 @@ import { keyframes } from "@emotion/react";
 import { Image, Box, Flex, SimpleGrid, useToast, useDisclosure } from "@chakra-ui/react";
 import { apiRequest } from "@/lib/api";
 import CropModal from "@/components/CropModal";
+import SendToStoreModal from "@/components/SendToStoreModal";
 import Lottie from "lottie-react";
 import farmGif from "../../public/images/farm.json";
 import flowerGif from "../../public/images/flower.json";
@@ -27,7 +28,7 @@ interface Crop extends BaseCrop {
   actualHarvestDate?: string;
   notes?: string;
   status?: string;
-  cropId?: number;
+  cropId: number;
   allCrops: BaseCrop[];
 }
 
@@ -45,10 +46,15 @@ const AllCropsShowcase = () => {
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [allCrops, setAllCrops] = useState<BaseCrop[]>([]);
   const [farmList, setFarmList] = useState<{ id: number; name: string }[]>([]);
-
+const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+const [selectedCropToSend, setSelectedCropToSend] = useState<Crop | null>(null);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
+const handleOpenSendModal = (crop: Crop) => {
+  setSelectedCropToSend(crop);
+  setIsSendModalOpen(true);
+};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,12 +112,107 @@ const AllCropsShowcase = () => {
     setSelectedCategory("");
   };
 
+ const handleQuantityUpdate = async (newQuantity: number, cropId: number) => {
+  try {
+    const oldCrop = cropsData.find((c) => c.id === cropId);
+    if (!oldCrop) return;
+
+    const updated = await apiRequest(`/planted-crops/${cropId}`, "PUT", {
+      quantity: newQuantity,
+      imageUrl: oldCrop.imageUrl,
+      name: oldCrop.name,
+      available: oldCrop.available,
+      notes: oldCrop.notes,
+      status: oldCrop.status,
+    });
+
+    setCropsData((prev) =>
+      prev.map((crop) =>
+        crop.id === cropId
+          ? {
+              ...updated, 
+            }
+          : crop
+      )
+    );
+
+    toast({
+      title: "updated successfully",
+      description: `Updated crop quantity   (${oldCrop.name}) to ${newQuantity}.`,
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (error) {
+    console.error("Error updating crop quantity:", error);
+    toast({
+      title: "Error updating quantity",
+      description: "Failed to update crop quantity.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+
+
+ const handleSendToStore = async (data: {
+  name: string;
+  category: string;
+  quantity: number;
+  imageUrl: string;
+  description: string;
+  plantedCropId: number;
+}) => {
+  try {
+    const originalCrop = cropsData.find(c => c.id === data.plantedCropId);
+    if (!originalCrop) throw new Error("Crop not found");
+
+    if (data.quantity > originalCrop.quantity) {
+      toast({
+        title: "Invalid quantity",
+        description: `You only have ${originalCrop.quantity} units.`,
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+await apiRequest("/api/products", "POST", {
+  ...data,
+  available: true
+});
+
+    const remainingQuantity = originalCrop.quantity - data.quantity;
+
+    await handleQuantityUpdate(remainingQuantity, data.plantedCropId);
+
+    toast({
+      title: "Sent to store",
+      description: "Successfully added to store",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (err) {
+    console.error(err);
+    toast({
+      title: "Failed to send",
+      description: "Error sending to store",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+
   const handleUpdateCrop = async (crop: Crop) => {
   try {
     const { id, name, category, ...rest } = crop;
     const cropToSend = {
       ...rest,
-      cropId: crop.cropId, // هنا التعديل
+      cropId: crop.cropId,
     };
 
     const updatedCrop = await apiRequest(`/planted-crops/${crop.id}`, "PUT", cropToSend);
@@ -180,6 +281,7 @@ const AllCropsShowcase = () => {
         showCropActions={true}
         onViewReport={() => router.push("/productionReport")}
       />
+      
 
       <Box bgColor="#FFFFFF" minHeight="100vh" padding="20px" flex="1">
         <CropModal
@@ -226,6 +328,9 @@ const AllCropsShowcase = () => {
                 setSelectedCrop(card);
                 onOpen();
               }}
+              onSendToStore={() => handleOpenSendModal(card)}
+              cropId={card.cropId}
+              category={card.category}
             />
           ))}
         </SimpleGrid>
@@ -243,7 +348,7 @@ const AllCropsShowcase = () => {
 
       {showCactus && (
         <Image
-          src="./images/cuteFlower.png"
+          src="/images/cuteFlower.png"
           alt="Peekaboo Cactus"
           position="fixed"
           bottom="-30px"
@@ -254,6 +359,17 @@ const AllCropsShowcase = () => {
           pointerEvents="none"
         />
       )}
+      <SendToStoreModal
+  isOpen={isSendModalOpen}
+  onClose={() => setIsSendModalOpen(false)}
+  crop={selectedCropToSend}
+  onSend={handleSendToStore}
+  onQuantityUpdate={handleQuantityUpdate}
+/>
+
+      
+
+      
     </Flex>
   );
 };
