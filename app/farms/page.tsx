@@ -32,6 +32,7 @@ const FarmListPage = () => {
 
   const toast = useToast();
   const router = useRouter();
+const [locationNames, setLocationNames] = useState<Record<number, string>>({});
 
   const fetchFarms = async () => {
     try {
@@ -53,6 +54,36 @@ const FarmListPage = () => {
   useEffect(() => {
     fetchFarms();
   }, []);
+
+
+  useEffect(() => {
+  const fetchLocationNames = async () => {
+    const updated: Record<number, string> = {};
+
+    await Promise.all(
+      farms.map(async (farm) => {
+        const { latitude, longitude, id } = farm;
+
+        if (latitude && longitude) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await res.json();
+            updated[id] = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          } catch {
+            updated[id] = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          }
+        }
+      })
+    );
+
+    setLocationNames(updated);
+  };
+
+  if (farms.length > 0) fetchLocationNames();
+}, [farms]);
+
 
   const handleEditFarm = (id: number) => {
     router.push(`/farms/${id}/edit`);
@@ -118,8 +149,8 @@ const FarmListPage = () => {
         
         <Text>🌿 Farm Name: {farm.name}</Text>
         <Text>🌿 Area: {farm.areaSize} dunum</Text>
-        <Text>📍 Longitude: {farm.longitude}</Text>
-        <Text>📍 Latitude: {farm.latitude}</Text>
+        <Text>📍 Location: {locationNames[farm.id] || "Loading..."}</Text>
+
 
         <Flex gap={3} mt={4} wrap="wrap">
           <Button

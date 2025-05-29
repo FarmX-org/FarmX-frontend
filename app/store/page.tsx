@@ -12,6 +12,7 @@ import { MdShoppingCart } from "react-icons/md";
 import { motion } from "framer-motion";
 import { Image } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import { apiRequest } from "@/lib/api";
 
 
 
@@ -22,6 +23,9 @@ interface Product {
   price: number;
   available: boolean;
   category: string;
+  unit: string;
+  quantity: number;
+  description: string;
 }
 
 const StorePage = () => {
@@ -36,43 +40,38 @@ const StorePage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const tempProducts: Product[] = [
-      {
-        id: 1,
-        imageSrc: "/images/Tomato.png",
-        title: "Fresh Tomatoes",
-        price: 2.5,
-        available: true,
-        category: "Vegetables",
-      },
-      {
-        id: 2,
-        imageSrc: "/images/Tomato.png",
-        title: "Red Apples",
-        price: 3.0,
-        available: true,
-        category: "Fruits",
-      },
-      {
-        id: 3,
-        imageSrc: "/images/Tomato.png",
-        title: "Organic Rice",
-        price: 1.8,
-        available: false,
-        category: "Grains",
-      },
-      {
-        id: 4,
-        imageSrc: "/images/Tomato.png",
-        title: "Fresh Basil",
-        price: 0.9,
-        available: true,
-        category: "Herbs",
-      },
-    ];
+  const fetchProducts = async () => {
+    try {
+const data = await apiRequest("/api/products" );
+    console.log("Fetched products:", data); 
 
-    setProducts(tempProducts);
-  }, []);
+      const formattedProducts = data.map((product: any) => ({
+  id: product.id,
+  imageSrc: product.imageUrl || "/images/Tomato.png",
+  title: product.cropName || "No description",
+  price: product.price ?? 0,
+  available: product.available ?? false,
+  category: "General", 
+  unit: product.unit || "",
+  quantity: product.quantity || 0,
+  description: product.description || "",
+}));
+
+      setProducts(formattedProducts);
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to fetch products",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  fetchProducts();
+}, []);
+
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title
@@ -147,15 +146,19 @@ const StorePage = () => {
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5} mt={0}>
           {filteredProducts.map((product) => (
             <Cards
-              key={product.id}
-              id={product.id}
-              imageSrc={product.imageSrc}
-              title={product.title}
-              price={product.price}
-              variant="product"
-              available={product.available}
-              onAddToCart={handleAddToCart}
-            />
+  key={product.id}
+  id={product.id}
+  imageSrc={product.imageSrc}
+  title={product.title}
+  price={product.price}
+  available={product.available}
+  description={product.description} 
+  quantity={product.quantity }
+  unit={product.unit}
+  variant="product"
+  onAddToCart={handleAddToCart}
+/>
+
           ))}
         </SimpleGrid>
 

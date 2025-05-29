@@ -41,6 +41,8 @@ interface CardProps {
   price?: number;
   description?: string;
   onAddToCart?: (id: number, quantity: number) => void;
+  unit?: string; 
+  category?: string;
 
   // planted فقط
   plantedDate?: string;
@@ -49,9 +51,20 @@ interface CardProps {
   notes?: string;
   status?: string;
   farmId?: number;
+  cropId?: number;
+
 
   onDelete?: (id: number) => void;
   onEdit?: (id: number) => void;
+
+   onSendToStore?: (data: {
+    name: string;
+    category: string;
+    quantity: number;
+    imageUrl: string;
+    description: string;
+    plantedCropId: number;
+  }) => void;
 }
 
 export const Cards = ({
@@ -68,9 +81,13 @@ export const Cards = ({
   actualHarvestDate,
   notes,
   status,
+  unit,
+  cropId,
+  category,
   onAddToCart,
   onDelete,
   onEdit,
+  onSendToStore
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const responsiveWidth = useBreakpointValue({ base: "90%", md: "260px" });
@@ -231,85 +248,100 @@ export const Cards = ({
                     Edit
                   </Button>
                 </Tooltip>
+                  {available && (
+  <Tooltip label="Send to Store" hasArrow>
+    <Button
+      size="sm"
+      leftIcon={<MdLocalShipping />}
+      color="green.600"
+      variant="ghost"
+      _hover={{ bg: "green.50", transform: "scale(1.1)" }}
+    onClick={(e) => {
+        e.stopPropagation();
+        if (!onSendToStore || cropId === undefined) {
+          return;
+        }
 
-                {available && (
-                  <Tooltip label="Send to Store" hasArrow>
-                    <Button
-                      size="sm"
-                      leftIcon={<MdLocalShipping />}
-                      color="green.600"
-                      variant="ghost"
-                      _hover={{ bg: "green.50", transform: "scale(1.1)" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log(`Sending ${title} to the store`);
-                      }}
-                    >
-                      Send
-                    </Button>
-                  </Tooltip>
-                )}
+        const payload = {
+          name: title,
+          category: category || "General",
+          quantity: quantity || 0,
+          imageUrl: imageSrc,
+          description: notes || "No description",
+          plantedCropId: id,
+        };
+        onSendToStore(payload);
+      }}
+    >
+      send
+    </Button>
+  </Tooltip>
+)}
               </Flex>
             </Stack>
           )}
 
           {variant === 'product' && (
-            <Stack spacing={3} mt={4}>
-              <Text fontSize="xl" fontWeight="bold" color="green.700" textAlign="center">
-                {title}
-              </Text>
+  <Stack spacing={3} mt={4}>
+    <Text fontSize="md" fontWeight="bold" color="green.700" textAlign="center">
+      {description || "No description"}
+    </Text>
 
-              <Stack spacing={1} fontSize="sm" color="gray.600" textAlign="center">
-                <Text><b>Weight:</b> 500g</Text>
-                <Text><b>Origin:</b> Palestine</Text>
-                <Text><b>Storage:</b> Keep refrigerated</Text>
-              </Stack>
+    <Stack spacing={1} fontSize="sm" color="gray.600" textAlign="center">
+      {quantity !== undefined && (
+        <Text><b>Quantity:</b> {quantity} {unit || "units"}</Text>
+      )}
+    </Stack>
 
-              <Flex gap={2} justify="center">
-                <Badge colorScheme="purple">Organic</Badge>
-              </Flex>
+    <Flex gap={2} justify="center">
+      <Badge colorScheme="purple">Organic</Badge>
+    </Flex>
 
-              <Text fontSize="xs" color="gray.500" textAlign="center">
-                ⭐ Rated {rating || 4.2}/5 by 120 users
-              </Text>
+    <Text fontSize="xs" color="gray.500" textAlign="center">
+      ⭐ Rated {rating || 4.2}/5 by 120 users
+    </Text>
 
-              <Flex align="center" gap={2} justify="center">
-                <Text fontSize="sm">Quantity:</Text>
-                <NumberInput
-                  size="sm"
-                  maxW={20}
-                  defaultValue={1}
-                  min={1}
-                  onChange={(valueString) => setSelectedQty(Number(valueString))}
-                >
-                  <NumberInputField onClick={(e) => e.stopPropagation()} />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper onClick={(e) => e.stopPropagation()} />
-                    <NumberDecrementStepper onClick={(e) => e.stopPropagation()} />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Flex>
+    <Flex align="center" gap={2} justify="center">
+      <Text fontSize="sm">Quantity:</Text>
+      <NumberInput
+        size="sm"
+        maxW={20}
+        defaultValue={1}
+        min={1}
+        onChange={(valueString) => setSelectedQty(Number(valueString))}
+      >
+        <NumberInputField onClick={(e) => e.stopPropagation()} />
+        <NumberInputStepper>
+          <NumberIncrementStepper onClick={(e) => e.stopPropagation()} />
+          <NumberDecrementStepper onClick={(e) => e.stopPropagation()} />
+        </NumberInputStepper>
+      </NumberInput>
+    </Flex>
 
-              <Flex justify="center">
-                <Button
-                  size="sm"
-                  colorScheme="green"
-                  leftIcon={<MdAddShoppingCart />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart && onAddToCart(id, selectedQty);
-                    playAddToCart();
-                  }}
-                >
-                  Add to Cart
-                </Button>
-              </Flex>
+    <Flex justify="center">
+      <Button
+        size="sm"
+        colorScheme="green"
+        leftIcon={<MdAddShoppingCart />}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddToCart && onAddToCart(id, selectedQty);
+          playAddToCart();
+        }}
+      >
+        Add to Cart
+      </Button>
+    </Flex>
 
-              <Text fontSize="md" fontWeight="bold" color="teal.600" textAlign="center">
-                💰 {price}$
-              </Text>
-            </Stack>
-          )}
+    {price !== undefined && (
+      <Text fontSize="md" fontWeight="bold" color="teal.600" textAlign="center">
+        💰 {price}$
+      </Text>
+    )}
+  </Stack>
+)}
+
+          
         </Box>
       </MotionBox>
     </Box>

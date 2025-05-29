@@ -47,6 +47,7 @@ const FarmFormPage = () => {
   const [soilType, setSoilType] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const toast = useToast();
   const router = useRouter();
@@ -69,6 +70,11 @@ const FarmFormPage = () => {
           setLocationCoords([data.latitude, data.longitude]);
           setLocationName(`${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`);
         }
+        if (data.licenseDocumentUrl) {
+  setImagePreview(data.licenseDocumentUrl);
+}
+
+
 
       })
         .catch((error) => {
@@ -118,7 +124,9 @@ const FarmFormPage = () => {
           reader.onerror = reject;
           reader.readAsDataURL(imageFile);
         });
-      }
+      }else if (imagePreview) {
+  base64Image = imagePreview;
+}
 
       const payload = {
         name: farmName,
@@ -232,9 +240,25 @@ const FarmFormPage = () => {
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Farm Image</FormLabel>
-                  <Input type="file" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                </FormControl>
+  <FormLabel>Farm Image</FormLabel>
+  <Input type="file" onChange={(e) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }} />
+  {imagePreview && (
+    <Box mt={2}>
+      <Text fontSize="sm" color="gray.500">Preview:</Text>
+      <img src={imagePreview} alt="Farm preview" style={{ width: "100%", borderRadius: "8px", marginTop: "8px" }} />
+    </Box>
+  )}
+</FormControl>
+
 
                 <FormControl>
                   <FormLabel>Location (Auto-filled from map)</FormLabel>

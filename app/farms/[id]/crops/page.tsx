@@ -12,6 +12,7 @@ import farmGif from "../../../../public/images/farm.json";
 import flowerGif from "../../../../public/images/flower.json";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import SendToStoreModal from "@/components/SendToStoreModal";
 
 
 interface BaseCrop {
@@ -31,8 +32,8 @@ interface Crop extends BaseCrop {
   actualHarvestDate?: string;
   notes?: string;
   status?: string;
-  cropId?: number;
-    allCrops: BaseCrop[];
+  cropId: number;
+  allCrops: BaseCrop[];
 
 }
 
@@ -54,6 +55,8 @@ const CropShowcase = () => {
   const [showCactus, setShowCactus] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
 const [allCrops, setAllCrops] = useState<BaseCrop[]>([]);
+const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+const [selectedCropToSend, setSelectedCropToSend] = useState<Crop | null>(null);
 
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -61,8 +64,11 @@ const [allCrops, setAllCrops] = useState<BaseCrop[]>([]);
 
   const params = useParams();
 const farmId = params?.id ? parseInt(params.id as string) : null;
-
-  useEffect(() => {
+const handleOpenSendModal = (crop: Crop) => {
+  setSelectedCropToSend(crop);
+  setIsSendModalOpen(true);
+};
+useEffect(() => {
   if (!farmId) return;
 
   const fetchData = async () => {
@@ -161,6 +167,100 @@ const farmId = params?.id ? parseInt(params.id as string) : null;
     toast({
       title: "Error adding crop",
       description: "Something went wrong while adding the crop.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+const handleQuantityUpdate = async (newQuantity: number, cropId: number) => {
+  try {
+    const oldCrop = cropsData.find((c) => c.id === cropId);
+    if (!oldCrop) return;
+
+    const updated = await apiRequest(`/planted-crops/${cropId}`, "PUT", {
+      quantity: newQuantity,
+      imageUrl: oldCrop.imageUrl,
+      name: oldCrop.name,
+      available: oldCrop.available,
+      notes: oldCrop.notes,
+      status: oldCrop.status,
+    });
+
+    setCropsData((prev) =>
+      prev.map((crop) =>
+        crop.id === cropId
+          ? {
+              ...updated, 
+            }
+          : crop
+      )
+    );
+
+    toast({
+      title: "Updated successfully ",
+      description: `Updated crop quantity (${oldCrop.name}) to ${newQuantity}.`,
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (error) {
+    console.error("Error updating crop quantity:", error);
+    toast({
+      title: "Error updating quantity",
+      description: "Something went wrong while updating the crop quantity.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+
+
+ const handleSendToStore = async (data: {
+  name: string;
+  category: string;
+  quantity: number;
+  imageUrl: string;
+  description: string;
+  plantedCropId: number;
+}) => {
+  try {
+    const originalCrop = cropsData.find(c => c.id === data.plantedCropId);
+    if (!originalCrop) throw new Error("Crop not found");
+
+    if (data.quantity > originalCrop.quantity) {
+      toast({
+        title: "Invalid quantity",
+        description: `You only have ${originalCrop.quantity} units.`,
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+await apiRequest("/api/products", "POST", {
+  ...data,
+  available: true
+});
+
+    const remainingQuantity = originalCrop.quantity - data.quantity;
+
+    await handleQuantityUpdate(remainingQuantity, data.plantedCropId);
+
+    toast({
+      title: "Sent to store",
+      description: "Successfully added to store",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (err) {
+    console.error(err);
+    toast({
+      title: "Failed to send",
+      description: "Error sending to store",
       status: "error",
       duration: 3000,
       isClosable: true,
@@ -299,6 +399,10 @@ const farmId = params?.id ? parseInt(params.id as string) : null;
     setSelectedCrop(card);
     onOpen();
               }}
+
+               onSendToStore={() => handleOpenSendModal(card)}
+              cropId={card.cropId}
+
             />
           ))}
         </SimpleGrid>
@@ -331,6 +435,15 @@ const farmId = params?.id ? parseInt(params.id as string) : null;
           pointerEvents="none"
         />
       )}
+
+       <SendToStoreModal
+        isOpen={isSendModalOpen}
+        onClose={() => setIsSendModalOpen(false)}
+        crop={selectedCropToSend}
+        onSend={handleSendToStore}
+        onQuantityUpdate={handleQuantityUpdate}
+      />
+      
     </Flex>
   );
 };
