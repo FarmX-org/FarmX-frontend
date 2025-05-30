@@ -51,7 +51,8 @@ const data = await apiRequest("/api/products" );
   title: product.cropName || "No description",
   price: product.price ?? 0,
   available: product.available ?? false,
-  category: "General", 
+  category: product.category || "Vegetables",
+
   unit: product.unit || "",
   quantity: product.quantity || 0,
   description: product.description || "",
@@ -74,14 +75,15 @@ const data = await apiRequest("/api/products" );
 
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory
-      ? product.category === selectedCategory
-      : true;
-    return matchesSearch && matchesCategory;
-  });
+  const matchesSearch = product.title
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase());
+  const matchesCategory = selectedCategory
+    ? product.category.toLowerCase() === selectedCategory.toLowerCase()
+    : true;
+  return matchesSearch && matchesCategory;
+});
+
 
   const handleAddToCart = (id: number, quantity: number) => {
     const product = products.find((p) => p.id === id);

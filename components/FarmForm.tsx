@@ -44,7 +44,6 @@ const FarmFormPage = () => {
   const [farmArea, setFarmArea] = useState("");
   const [locationName, setLocationName] = useState("");
   const [locationCoords, setLocationCoords] = useState<[number, number] | null>(null);
-  const [soilType, setSoilType] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -64,7 +63,6 @@ const [imagePreview, setImagePreview] = useState<string | null>(null);
       .then((data) => {
         setFarmName(data.name || "");
         setFarmArea(data.areaSize !== undefined ? data.areaSize.toString() : "");
-        setSoilType(data.soilType || "");
 
         if (data.latitude && data.longitude) {
           setLocationCoords([data.latitude, data.longitude]);
@@ -131,7 +129,6 @@ const [imagePreview, setImagePreview] = useState<string | null>(null);
       const payload = {
         name: farmName,
         areaSize: parseFloat(farmArea),
-        soil_type: soilType,
         locationName: locationName,
         licenseDocumentUrl: base64Image,
         latitude: locationCoords?.[0],
@@ -222,23 +219,6 @@ const [imagePreview, setImagePreview] = useState<string | null>(null);
                     required
                   />
                 </FormControl>
-
-                <FormControl>
-                  <FormLabel>Soil Type</FormLabel>
-                  <Select
-                    placeholder="Select soil type"
-                    value={soilType}
-                    onChange={(e) => setSoilType(e.target.value)}
-                  >
-                    <option value="clay">Clay</option>
-                    <option value="sandy">Sandy</option>
-                    <option value="silt">Silt</option>
-                    <option value="peat">Peat</option>
-                    <option value="chalk">Chalk</option>
-                    <option value="loam">Loam</option>
-                  </Select>
-                </FormControl>
-
                 <FormControl>
   <FormLabel>Farm Image</FormLabel>
   <Input type="file" onChange={(e) => {
