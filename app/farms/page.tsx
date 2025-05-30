@@ -9,25 +9,31 @@ import {
   Flex,
   useToast,
   Spinner,
-  Card,
-  CardHeader,
   CardBody,
   Stack,
+  Card,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
+import { motion } from "framer-motion";
+import { MdDelete, MdEdit } from "react-icons/md";
+const MotionCard = motion(Card);
+
 
 const FarmListPage = () => {
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingFarmId, setDeletingFarmId] = useState<number | null>(null);
+  const [soilTypes, setSoilTypes] = useState<Record<number, string>>({});
+
   const cancelRef = useRef(null);
 
   const toast = useToast();
@@ -84,6 +90,43 @@ const [locationNames, setLocationNames] = useState<Record<number, string>>({});
   if (farms.length > 0) fetchLocationNames();
 }, [farms]);
 
+useEffect(() => {
+  const fetchLocationAndSoilTypes = async () => {
+    const updatedLocations: Record<number, string> = {};
+    const updatedSoil: Record<number, string> = {};
+
+    await Promise.all(
+      farms.map(async (farm) => {
+        const { latitude, longitude, id } = farm;
+
+        if (latitude && longitude) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await res.json();
+            updatedLocations[id] = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          } catch {
+            updatedLocations[id] = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          }
+
+          try {
+            const soil = await apiRequest(`/soil/type?lat=${latitude}&lon=${longitude}`);
+            console.log("soil:", soil);
+            updatedSoil[id] = soil; 
+          } catch {
+            updatedSoil[id] = "Unknown";
+          }
+        }
+      })
+    );
+
+    setLocationNames(updatedLocations);
+    setSoilTypes(updatedSoil);
+  };
+
+  if (farms.length > 0) fetchLocationAndSoilTypes();
+}, [farms]);
 
   const handleEditFarm = (id: number) => {
     router.push(`/farms/${id}/edit`);
@@ -114,11 +157,22 @@ const [locationNames, setLocationNames] = useState<Record<number, string>>({});
   };
 
   return (
-    <Box px={{ base: 6, md: 16 }} py={10} mt={20}>
+    <Box
+      px={{ base: 6, md: 16 }}
+      py={10}
+      mt={20}
+      bgGradient="linear(to-br, green.50, white)"
+      minH="100vh"
+    >
       <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg" color="green.700">
-          Your Farms
-        </Heading>
+        <Flex direction="column">
+          <Heading size="lg" color="green.700">
+            🌾 Your Smart Farms
+          </Heading>
+          <Text fontSize="sm" color="gray.500">
+            Manage and track all your farms with ease.
+          </Text>
+        </Flex>
         <Button colorScheme="green" onClick={() => router.push("/farms/new")}>
           + Add Farm
         </Button>
@@ -132,53 +186,76 @@ const [locationNames, setLocationNames] = useState<Record<number, string>>({});
         <Text>No farms found. Add your first farm!</Text>
       ) : (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-        {farms.map((farm) => (
-  <Card key={farm.id} shadow="md" border="1px solid #ddd">
-   
-    <CardBody>
-      <Stack spacing={2}>
-        {farm.licenseDocumentUrl && (
-          <Box mb={3} maxH="200px" overflow="hidden" borderRadius="md">
-            <img
-              src={farm.licenseDocumentUrl}
-              alt={`${farm.name} License Document`}
-              style={{ width: "100%", objectFit: "cover", borderRadius: "8px" }}
-            />
-          </Box>
-        )}
-        
-        <Text>🌿 Farm Name: {farm.name}</Text>
-        <Text>🌿 Area: {farm.areaSize} dunum</Text>
-        <Text>📍 Location: {locationNames[farm.id] || "Loading..."}</Text>
+          {farms.map((farm, i) => (
+            <MotionCard
+              key={farm.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              bg="whiteAlpha.800"
+              backdropFilter="blur(10px)"
+              boxShadow="lg"
+              borderRadius="2xl"
+              transitionDuration="0.3s"
+              _hover={{ transform: "translateY(-5px)", boxShadow: "xl" }}
+            >
+              <CardBody p={4}>
+                <Stack spacing={3}>
+                  {farm.licenseDocumentUrl && (
+                    <Box borderRadius="xl" overflow="hidden" height="180px">
+                      <img
+                        src={farm.licenseDocumentUrl}
+                        alt={`${farm.name} License`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </Box>
+                  )}
 
+                  <Heading fontSize="xl" color="green.700">
+                    {farm.name}
+                  </Heading>
 
-        <Flex gap={3} mt={4} wrap="wrap">
-          <Button
-            colorScheme="green"
-            onClick={() => router.push(`/farms/${farm.id}/crops`)}
-          >
-            View Crops
-          </Button>
-          <Button
-            colorScheme="green"
-            variant="outline"
-            onClick={() => handleEditFarm(farm.id)}
-          >
-            Edit
-          </Button>
-          <Button
-            colorScheme="red"
-            variant="outline"
-            onClick={() => setDeletingFarmId(farm.id)}
-          >
-            Delete
-          </Button>
-        </Flex>
-      </Stack>
-    </CardBody>
-  </Card>
-))}
+                  <Text fontSize="sm" color="gray.600">
+                    📍 <strong>Location:</strong> {locationNames[farm.id] || "Loading..."}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    🌱 <strong>Soil Type:</strong> {soilTypes[farm.id] || "Loading..."}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    📏 <strong>Area:</strong> {farm.areaSize} dunum
+                  </Text>
 
+                  <Flex gap={2} mt={3} flexWrap="wrap">
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      onClick={() => router.push(`/farms/${farm.id}/crops`)}
+                    >
+                      View Crops
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="green"
+                      onClick={() => handleEditFarm(farm.id)}
+                    >
+                      <MdEdit />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="green"
+                      onClick={() => setDeletingFarmId(farm.id)}
+                    >
+                      <MdDelete/>
+                      Delete
+                    </Button>
+                  </Flex>
+                </Stack>
+              </CardBody>
+            </MotionCard>
+          ))}
         </SimpleGrid>
       )}
 
