@@ -12,82 +12,100 @@ import {
   Button,
   IconButton,
   Flex,
+  Spinner,
+  useToast,
+  Text,
   Spacer,
 } from '@chakra-ui/react';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiRequest } from '@/lib/api';
 
 type User = {
-  id: number;
+  username: string;
   name: string;
   email: string;
-  role: string;
+  roles: string;
 };
 
-
-
-
-const initialUsers: User[] = [
-  { id: 1, name: 'Ahmad Ali', email: 'ahmad@example.com', role: 'Admin' },
-  { id: 2, name: 'Laila Saleh', email: 'laila@example.com', role: 'Farmer' },
-  { id: 3, name: 'Khaled Omar', email: 'khaled@example.com', role: 'User' },
-];
-
 export default function UsersPage() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState<User[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: number) => {
-    const filtered = users.filter((user) => user.id !== id);
-    setUsers(filtered);
-  };
-  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiRequest('/users');
+        console.log(response);
+        setUsers(response);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+
+  if (loading) {
+    return (
+      <Flex justify="center" mt={20}>
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (!users || users.length === 0) {
+    return (
+      <Box p={8}>
+        <Heading size="lg" mb={4}>
+          Users Management
+        </Heading>
+        <Text>No users found.</Text>
+      </Box>
+    );
+  }
 
   return (
-    <Box>
-      <Flex mb={6} alignItems="center">
-        <Heading size="lg">Users Management</Heading>
+    <Box p={8} bg="gray.50" minH="100vh">
+      <Flex mb={6} alignItems="center" mt={20}>
+        <Heading size="lg" color="green.600">
+          Users Management
+        </Heading>
         <Spacer />
-        <Button colorScheme="teal">Add New User</Button>
+        <Button bg="green.500" color="white" _hover={{ bg: 'green.600' }}>
+          Add New User
+        </Button>
       </Flex>
 
-      <Table variant="simple" colorScheme="teal">
-        <Thead bg="gray.200">
-          <Tr>
-            <Th>ID</Th>
-            <Th>Name</Th>
-            <Th>Email</Th>
-            <Th>Role</Th>
-            <Th textAlign="center">Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {users.map(({ id, name, email, role }) => (
-            <Tr key={id}>
-              <Td>{id}</Td>
-              <Td>{name}</Td>
-              <Td>{email}</Td>
-              <Td>{role}</Td>
-              <Td textAlign="center">
-                <IconButton
-                  aria-label="Edit user"
-                  icon={<FiEdit />}
-                  colorScheme="blue"
-                  size="sm"
-                  mr={2}
-                  onClick={() => alert(`Edit user ${name} (To be implemented)`)}
-                />
-                <IconButton
-                  aria-label="Delete user"
-                  icon={<FiTrash2 />}
-                  colorScheme="red"
-                  size="sm"
-                  onClick={() => handleDelete(id)}
-                />
-              </Td>
+      <Box borderRadius="lg" overflow="hidden" boxShadow="md" bg="white">
+        <Table variant="simple">
+          <Thead bg="green.500">
+            <Tr>
+              <Th color="white">UserName</Th>
+              <Th color="white">Name</Th>
+              <Th color="white">Email</Th>
+              <Th color="white">Role</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {users.map(({ username, name, email, roles }) => (
+              <Tr
+                key={username}
+                _hover={{
+                  bg: 'green.50',
+                }}
+                transition="background 0.2s"
+              >
+                <Td>{username}</Td>
+                <Td>{name}</Td>
+                <Td>{email}</Td>
+                <Td>{roles}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
     </Box>
   );
 }

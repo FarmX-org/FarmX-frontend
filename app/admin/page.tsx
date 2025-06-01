@@ -1,4 +1,3 @@
-// app/admin/page.tsx
 'use client';
 
 import { Text, Stat, StatLabel, StatNumber, HStack } from '@chakra-ui/react';

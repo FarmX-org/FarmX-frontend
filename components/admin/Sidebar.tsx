@@ -23,6 +23,8 @@ const navLinks = [
   { label: 'Users', icon: FiUsers, href: '/admin/users' },
   { label: 'Farms', icon: FiMap, href: '/admin/farms' },
   { label: 'Crops', icon: FiDatabase, href: '/admin/crops' },
+  { label: 'Planted Crops', icon: FiDatabase, href: '/admin/planted-crops' },
+  { label: 'Orders', icon: FiShoppingBag, href: '/admin/orders' },
   { label: 'Products', icon: FiShoppingBag, href: '/admin/products' },
   { label: 'Reports', icon: FiBarChart2, href: '/admin/reports' },
 ];
