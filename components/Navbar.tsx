@@ -22,12 +22,15 @@ import {
   MenuList,
   MenuItem,
   Text,
+  useToast
 } from '@chakra-ui/react';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { FiLogIn, FiLogOut } from 'react-icons/fi';
 import { FaBrain } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getTokenExpiration } from './utils/jwt';
+
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link
@@ -45,12 +48,29 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
+  const toast = useToast();
+
 
   const [user, setUser] = useState<{ name: string; avatarUrl: string; roles: string[] } | null>(null);
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
+    router.push('/');
+  };
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const rolesData = localStorage.getItem('roles');
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  const userData = localStorage.getItem('user');
+  const rolesData = localStorage.getItem('roles');
+
+  if (token) {
+    const expiry = getTokenExpiration(token);
+
+    if (expiry && Date.now() > expiry) {
+      console.warn('Token expired');
+      handleLogout(); 
+      return;
+    }
 
     if (userData && rolesData) {
       setUser({
@@ -58,14 +78,29 @@ export default function Navbar() {
         roles: JSON.parse(rolesData),
       });
     }
-  }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setUser(null);
-    router.push('/');
-  };
+    if (expiry) {
+      const timeout = expiry - Date.now();
+      const logoutTimer = setTimeout(() => {
+        console.warn('Token expired automatically (timeout)');
+        handleLogout();
+        toast({
+  title: 'Session expired',
+  description: 'You have been logged out automatically.',
+  status: 'info',
+  duration: 4000,
+  isClosable: true,
+});
 
+      }, timeout);
+
+      return () => clearTimeout(logoutTimer); 
+    }
+  }
+}, []);
+
+
+  
 const isFarmer = user?.roles?.includes('ROLE_FARMER');
   const isAdmin = user?.roles?.includes('ROLE_ADMIN');
 
@@ -130,8 +165,8 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
                 </HStack>
               </MenuButton>
               <MenuList>
-                <MenuItem onClick={() => router.push('/profile')}>Profile</MenuItem>
-                <MenuItem icon={<FiLogOut />} onClick={handleLogout}>
+                <MenuItem onClick={() => router.push('/profile')} color={'green'}>Profile</MenuItem>
+                <MenuItem icon={<FiLogOut />} onClick={handleLogout} color={'green'}>
                   Logout
                 </MenuItem>
               </MenuList>
@@ -173,10 +208,10 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
 
               {user ? (
                 <>
-                  <Button color={'green.500'} variant="outline" w="100%" onClick={() => router.push('/profile')}>
+                  <Button  variant="outline" w="100%" onClick={() => router.push('/profile')}>
                     Profile
                   </Button>
-                  <Button leftIcon={<FiLogOut />} colorScheme="red" variant="solid" w="100%" onClick={handleLogout}>
+                  <Button  leftIcon={<FiLogOut />} colorScheme="red" variant="solid" w="100%" onClick={handleLogout}>
                     Logout
                   </Button>
                 </>
