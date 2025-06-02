@@ -7,6 +7,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import Notifications from "@/components/Notifications";
 import Footer from "@/components/Footer";
 import "leaflet/dist/leaflet.css";
+import { useState , useEffect} from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,7 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const hideNotifications = pathname === "/login" || pathname === "/signup";
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+   useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token); 
+  }, []);
+
+
+  const hideNotifications = pathname === "/login" || pathname === "/signup"|| !isLoggedIn;
 
   return (
     <html lang="en">

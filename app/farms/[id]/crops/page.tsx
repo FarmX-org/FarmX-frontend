@@ -37,11 +37,6 @@ interface Crop extends BaseCrop {
 
 }
 
-const bounce = keyframes`
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-`;
-
 const peekaboo = keyframes`
   0%, 100% { transform: translateY(100%) scale(0.8); opacity: 0.5; }
   40%, 60% { transform: translateY(-20px) scale(1); opacity: 1; }
