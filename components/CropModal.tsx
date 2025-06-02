@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton,
   ModalBody, ModalFooter, Input, FormControl, FormLabel,
-  Grid, GridItem, Button, Box, Image, useToast, Select
+  Grid, GridItem, Button, Box, Image, useToast, Select,Switch
 } from "@chakra-ui/react";
 
 interface BaseCrop {
@@ -36,13 +36,11 @@ const CropModal: React.FC<CropModalProps> = ({
     category: "",
     quantity: 0,
     status: "planted",
-    plantedDate: "",
-    estimatedHarvestDate: "",
-    actualHarvestDate: "",
     notes: "",
     imageUrl: "",
     available: true,
     farmId: null,
+  
   });
 
   useEffect(() => {
@@ -59,9 +57,6 @@ const CropModal: React.FC<CropModalProps> = ({
         category: "",
         quantity: 0,
         status: "planted",
-        plantedDate: "",
-        estimatedHarvestDate: "",
-        actualHarvestDate: "",
         notes: "",
         imageUrl: "",
         available: true,
@@ -92,7 +87,7 @@ const CropModal: React.FC<CropModalProps> = ({
   const handleSave = () => {
   const cropIdNumber = Number(cropData.cropId);
 
-  if (!cropData.cropId || isNaN(Number(cropData.cropId)) || !cropData.plantedDate) {
+  if (!cropData.cropId || isNaN(Number(cropData.cropId))) {
     toast({
       title: "Missing fields",
       description: "Please select a crop and set planted date.",
@@ -130,9 +125,9 @@ const CropModal: React.FC<CropModalProps> = ({
   value={cropData.cropId}
   onChange={(e) => {
   const selectedId = Number(e.target.value);
-  if (isNaN(selectedId)) return; // ignore invalid input
+  if (isNaN(selectedId)) return; 
   const selected = allCrops.find(c => c.id === selectedId);
-  if (!selected) return; // crop not found, do nothing
+  if (!selected) return; 
   setCropData({
     ...cropData,
     cropId: selected.id,
@@ -162,39 +157,18 @@ const CropModal: React.FC<CropModalProps> = ({
                 }
               />
             </FormControl>
-
-            <FormControl>
-              <FormLabel>Planted Date</FormLabel>
-              <Input
-                type="date"
-                value={cropData.plantedDate}
-                onChange={(e) =>
-                  setCropData({ ...cropData, plantedDate: e.target.value })
-                }
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Estimated Harvest Date</FormLabel>
-              <Input
-                type="date"
-                value={cropData.estimatedHarvestDate}
-                onChange={(e) =>
-                  setCropData({ ...cropData, estimatedHarvestDate: e.target.value })
-                }
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Actual Harvest Date</FormLabel>
-              <Input
-                type="date"
-                value={cropData.actualHarvestDate}
-                onChange={(e) =>
-                  setCropData({ ...cropData, actualHarvestDate: e.target.value })
-                }
-              />
-            </FormControl>
+             <GridItem colSpan={2}>
+              <FormControl>
+                <FormLabel>Status</FormLabel>
+                <Input
+                  value={cropData.status}
+                  onChange={(e) =>
+                    setCropData({ ...cropData, status: e.target.value })
+                  }
+                  placeholder="status of this crop"
+                />
+              </FormControl>
+            </GridItem>
 
             <GridItem colSpan={2}>
               <FormControl>
@@ -208,6 +182,12 @@ const CropModal: React.FC<CropModalProps> = ({
                 />
               </FormControl>
             </GridItem>
+
+             <FormControl mb={3}>
+                        <FormLabel>Available</FormLabel>
+                        <Switch isChecked={cropData.available} onChange={(e) => setCropData({ ...cropData, available: e.target.checked })}/>
+                      </FormControl>
+            
 
             <GridItem colSpan={2}>
               <FormControl>

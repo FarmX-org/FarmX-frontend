@@ -48,6 +48,7 @@ const AllCropsShowcase = () => {
   const [farmList, setFarmList] = useState<{ id: number; name: string }[]>([]);
 const [isSendModalOpen, setIsSendModalOpen] = useState(false);
 const [selectedCropToSend, setSelectedCropToSend] = useState<Crop | null>(null);
+const [cropPage, setCropPage] = useState(1);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
@@ -59,6 +60,7 @@ const handleOpenSendModal = (crop: Crop) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setCropPage(0);
         const plantedFarms = await apiRequest("/planted-crops/by-farmer", "GET");
         const cropsList = await apiRequest("/crops", "GET");
         setAllCrops(cropsList);
@@ -280,6 +282,7 @@ await apiRequest("/api/products", "POST", {
         onResetFilters={handleResetFilters}
         showCropActions={true}
         onViewReport={() => router.push("/productionReport")}
+        cropPage={cropPage}
       />
       
 

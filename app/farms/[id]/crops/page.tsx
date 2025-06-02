@@ -58,6 +58,9 @@ const [allCrops, setAllCrops] = useState<BaseCrop[]>([]);
 const [isSendModalOpen, setIsSendModalOpen] = useState(false);
 const [selectedCropToSend, setSelectedCropToSend] = useState<Crop | null>(null);
 
+  const [cropPage, setCropPage] = useState(1);
+
+
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
@@ -319,7 +322,7 @@ await apiRequest("/api/products", "POST", {
       toast({
         title: "Crop deleted!",
         description: "The crop was successfully removed.",
-        status: "info",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
@@ -341,6 +344,7 @@ await apiRequest("/api/products", "POST", {
         onSearchChange={setSearchTerm}
         onCategorySelect={setSelectedCategory}
         selectedCategory={selectedCategory}
+        cropPage={cropPage}
         onResetFilters={handleResetFilters}
         showCropActions={true}
         onAddCrop={onOpen}
@@ -350,19 +354,20 @@ await apiRequest("/api/products", "POST", {
       <Box bgColor={"#FFFFFF"} minHeight="100vh" padding="20px" flex="1">
 
         <CropModal
-          isOpen={isOpen}
-          onClose={onClose}
-          selectedCrop={selectedCrop}
-          onSave={(crop) => {
-            if (selectedCrop) {
-              handleUpdateCrop(crop);
-            } else {
-              handleAddCrop(crop);
-            }
-          }}
-         farmId={Number(farmId)}
-         allCrops={allCrops}
-        />
+  isOpen={isOpen}
+  onClose={onClose}
+  selectedCrop={selectedCrop}
+  onSave={(crop) => {
+    if (selectedCrop) {
+      handleUpdateCrop(crop);  
+    } else {
+      handleAddCrop(crop);   
+    }
+  }}
+  farmId={Number(farmId)}
+  allCrops={allCrops}
+/>
+
 
         <Box
           position={"relative"}

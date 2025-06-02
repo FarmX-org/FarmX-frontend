@@ -18,11 +18,12 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { apiRequest } from "@/lib/api";
-import { FiTrash2, FiEdit } from "react-icons/fi";
-
+import { FiTrash2, FiEdit, FiPlus } from "react-icons/fi";
+import CropModal from "@/components/CropModal";
 
 type PlantedCropDTO = {
   id: number;
+  name: string;
   cropId: number;
   farmId: number;
   plantedDate: string;
@@ -41,16 +42,42 @@ type FarmCropsDTO = {
   plantedCrops: PlantedCropDTO[];
 };
 
+type BaseCrop = {
+  id: number;
+  name: string;
+  category: string;
+};
+
 export default function AdminPlantedCropsDashboard() {
   const [farmCrops, setFarmCrops] = useState<FarmCropsDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState<PlantedCropDTO | null>(null);
+  const [allCrops, setAllCrops] = useState<BaseCrop[]>([]);
   const toast = useToast();
 
   const fetchPlantedCrops = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest("/planted-crops/by-farmer", "GET");
-      setFarmCrops(data);
+      const plantedCropsData = await apiRequest("/planted-crops/by-farmer", "GET");
+      const cropsList = await apiRequest("/crops", "GET");
+      setAllCrops(cropsList);
+
+      const cropMap = new Map<number, string>();
+      cropsList.forEach((crop: BaseCrop) => {
+        cropMap.set(crop.id, crop.name);
+      });
+
+      const merged: FarmCropsDTO[] = plantedCropsData.map((farm: any) => ({
+        farmId: farm.farmId,
+        farmName: farm.farmName,
+        plantedCrops: farm.plantedCrops.map((crop: any) => ({
+          ...crop,
+          name: cropMap.get(crop.cropId) || "Unknown Crop",
+        })),
+      }));
+
+      setFarmCrops(merged);
     } catch (error: any) {
       toast({
         title: "Failed to fetch planted crops",
@@ -62,9 +89,6 @@ export default function AdminPlantedCropsDashboard() {
     }
   };
 
-  
-
-
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this planted crop?")) return;
 
@@ -75,6 +99,30 @@ export default function AdminPlantedCropsDashboard() {
     } catch (error: any) {
       toast({
         title: "Delete failed",
+        description: error.message,
+        status: "error",
+      });
+    }
+  };
+
+  const handleEdit = (crop: PlantedCropDTO) => {
+    setSelectedCrop(crop);
+    setModalOpen(true);
+  };
+
+  const handleSaveCrop = async (cropData: any) => {
+    try {
+      if (cropData.id) {
+        await apiRequest(`/planted-crops/${cropData.id}`, "PUT", cropData);
+        toast({ title: "Crop updated successfully", status: "success" });
+      } else {
+        await apiRequest(`/planted-crops`, "POST", cropData);
+        toast({ title: "Crop added successfully", status: "success" });
+      }
+      fetchPlantedCrops();
+    } catch (error: any) {
+      toast({
+        title: "Save failed",
         description: error.message,
         status: "error",
       });
@@ -93,100 +141,101 @@ export default function AdminPlantedCropsDashboard() {
             Planted Crops Management
           </Heading>
           <Spacer />
+         
         </Flex>
 
         {loading ? (
           <Flex justify="center" mt={10}>
             <Spinner size="xl" />
           </Flex>
+        ) : farmCrops.length === 0 ? (
+          <Box mt={10} textAlign="center">
+            No planted crops found.
+          </Box>
         ) : (
-          <>
-            {farmCrops.length === 0 ? (
-              <Box mt={10} textAlign="center">
-                No planted crops found.
+          farmCrops.map((farm) => (
+            <Box key={farm.farmId} mb={10}>
+              <Heading size="md" mb={4} color="green.500">
+                {farm.farmName}
+              </Heading>
+              <Box borderRadius="lg" overflow="hidden" boxShadow="md" bg="white">
+                <Table variant="simple">
+                  <Thead bg="green.500">
+                    <Tr>
+                      <Th color="white">Name</Th>
+                      <Th color="white">Planted Date</Th>
+                      <Th color="white">Harvest (Est./Actual)</Th>
+                      <Th color="white">Quantity</Th>
+                      <Th color="white">Status</Th>
+                      <Th color="white">Notes</Th>
+                      <Th color="white">Available</Th>
+                      <Th color="white">Image</Th>
+                      <Th color="white">Actions</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {farm.plantedCrops.map((crop) => (
+                      <Tr key={crop.id} _hover={{ bg: "green.50" }}>
+                        <Td>{crop.name}</Td>
+                        <Td>{crop.plantedDate}</Td>
+                        <Td>
+                          {crop.estimatedHarvestDate}
+                          {crop.actualHarvestDate ? ` / ${crop.actualHarvestDate}` : ""}
+                        </Td>
+                        <Td>{crop.quantity}</Td>
+                        <Td>{crop.status}</Td>
+                        <Td>{crop.notes}</Td>
+                        <Td>{crop.available ? "Yes" : "No"}</Td>
+                        <Td>
+                          {crop.imageUrl ? (
+                            <Image
+                              src={crop.imageUrl}
+                              alt="crop"
+                              boxSize="50px"
+                              objectFit="cover"
+                              borderRadius="md"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                        </Td>
+                        <Td>
+                          <HStack>
+                            <Button
+                              size="sm"
+                              onClick={() => handleDelete(crop.id)}
+                              colorScheme="green"
+                              leftIcon={<FiTrash2 />}
+                            >
+                              Delete
+                            </Button>
+                            <Button
+                              size="sm"
+                              colorScheme="green"
+                              leftIcon={<FiEdit />}
+                              onClick={() => handleEdit(crop)}
+                            >
+                              Edit
+                            </Button>
+                          </HStack>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
               </Box>
-            ) : (
-              farmCrops.map((farm) => (
-                <Box key={farm.farmId} mb={10}>
-                  <HStack mb={4} justify="space-between">
-                  <Heading size="md" mb={4} color="green.500">
-                    {farm.farmName}
-                  </Heading>
-                   <Button
-                    colorScheme="green"
-                    mb={4}
-                    onClick={() => {
-                      
-                    }}
-                    >
-                    Add Crop
-                  </Button>
-                  </HStack>
-                 
-                  <Box borderRadius="lg" overflow="hidden" boxShadow="md" bg="white">
-                    <Table variant="simple">
-                      <Thead bg="green.500">
-                        <Tr>
-                          <Th color="white">ID</Th>
-                          <Th color="white">Planted Date</Th>
-                          <Th color="white">Harvest (Est./Actual)</Th>
-                          <Th color="white">Quantity</Th>
-                          <Th color="white">Status</Th>
-                          <Th color="white">Available</Th>
-                          <Th color="white">Image</Th>
-                          <Th color="white">Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {farm.plantedCrops.map((crop) => (
-                          <Tr key={crop.id} _hover={{ bg: "green.50" }}>
-                            <Td>{crop.id}</Td>
-                            <Td>{crop.plantedDate}</Td>
-                            <Td>
-                              {crop.estimatedHarvestDate}
-                              {crop.actualHarvestDate ? ` / ${crop.actualHarvestDate}` : ""}
-                            </Td>
-                            <Td>{crop.quantity}</Td>
-                            <Td>{crop.status}</Td>
-                            <Td>{crop.available ? "Yes" : "No"}</Td>
-                            <Td>
-                              {crop.imageUrl ? (
-                                <Image src={crop.imageUrl} alt="crop" boxSize="50px" objectFit="cover" borderRadius="md" />
-                              ) : (
-                                "-"
-                              )}
-                            </Td>
-                            <Td>
-                              <HStack>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleDelete(crop.id)}
-                                  colorScheme="red"
-                                  leftIcon={<FiTrash2 />}
-                                >
-                                  Delete
-                                </Button>
-                                <Button 
-                                size="sm"
-                                 colorScheme="green"
-                                 leftIcon={<FiEdit />}
-                                 >
-                                  Edit
-                                </Button>
-
-                              </HStack>
-                            </Td>
-                          </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
-                  </Box>
-                </Box>
-              ))
-            )}
-          </>
+            </Box>
+          ))
         )}
       </Box>
+
+      <CropModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        selectedCrop={selectedCrop}
+        onSave={handleSaveCrop}
+        allCrops={allCrops}
+      />
     </Box>
   );
 }
