@@ -25,16 +25,19 @@ interface SidebarProps {
   onSearchChange: (value: string) => void;
   onCategorySelect: (category: string) => void;
   selectedCategory: string;
+  cropPage?: number;
   onResetFilters: () => void;
   showCropActions?: boolean; 
   onAddCrop?: () => void; 
   onViewReport?: () => void;  
+
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   onSearchChange,
   onCategorySelect,
   selectedCategory,
+  cropPage,
   onResetFilters,
   showCropActions = false,
   onAddCrop,
@@ -42,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile, setIsMobile] = useState(false);
-  const [localSearch, setLocalSearch] = useState(""); // 💡 local state
+  const [localSearch, setLocalSearch] = useState(""); 
 
   useEffect(() => {
     const handleResize = () => {
@@ -54,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   useEffect(() => {
-    onSearchChange(localSearch); // 🔁 sync with parent
+    onSearchChange(localSearch); 
   }, [localSearch]);
 
 
@@ -89,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         View All
       </Button>
 
-      {showCropActions && (
+      {showCropActions && cropPage === 1 && (
         <>
           <Button
             colorScheme="green"
