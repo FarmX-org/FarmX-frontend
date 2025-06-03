@@ -103,6 +103,8 @@ useEffect(() => {
   
 const isFarmer = user?.roles?.includes('ROLE_FARMER');
   const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+  const isConsumer = user?.roles?.includes('ROLE_CONSUMER');
+
 
   const commonLinks = [
     { label: 'Home', href: '/' },
@@ -123,11 +125,15 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
     { label: 'Activity', href: '/activites' },
     { label: 'Farms', href: '/farms' },
   ];
+  const consumerLinks = [
+    { label: 'Store', href: '/store' },
+  ];
 
   const displayedLinks = [
     ...commonLinks,
     ...(isFarmer ? farmerLinks : []),
     ...(isAdmin ? adminLinks : []),
+    ...(isConsumer ? consumerLinks : []),
   ];
 
   return (
