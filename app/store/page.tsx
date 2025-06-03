@@ -42,7 +42,7 @@ const StorePage = () => {
   useEffect(() => {
   const fetchProducts = async () => {
     try {
-const data = await apiRequest("/api/products" );
+const data = await apiRequest("/products/store" );
     console.log("Fetched products:", data); 
 
       const formattedProducts = data.map((product: any) => ({
@@ -88,6 +88,16 @@ const data = await apiRequest("/api/products" );
   const handleAddToCart = async  (id: number, quantity: number) => {
     const product = products.find((p) => p.id === id);
     if (!product) return;
+    if (quantity > product.quantity) {
+    toast({
+      title: "Quantity is greater than available quantity.",
+      description: `You only have  ${product.quantity} units.`,
+      status: "warning",
+      duration: 3000,
+      isClosable: true,
+    });
+    return;
+  }
     try{
       await apiRequest("/cart/items", "POST", {
         productId: id,
