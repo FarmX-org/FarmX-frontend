@@ -1,41 +1,32 @@
 'use client';
-
 import {
-  Box,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  IconButton,
-  Flex,
-  Spinner,
-  useToast,
-  Text,
-  Spacer,
+  Box, Heading, Table, Thead, Tbody, Tr, Th, Td, Button,
+  Flex, Spinner, useToast, Text, Spacer, useDisclosure,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/api';
+import AddUserModal from '@/components/AddUserModal'; 
 
 type User = {
   username: string;
   name: string;
+  phone: string;
+  city: string;
+  street: string;
   email: string;
-  roles: string;
+  profilePhotoUrl?: string;
+  roles: string[];
 };
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await apiRequest('/users');
-        console.log(response);
         setUsers(response);
       } catch (error) {
         console.error('Failed to fetch users:', error);
@@ -46,23 +37,15 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
+  const handleUserAdded = (user: User) => {
+    setUsers((prev) => [...(prev || []), user]);
+  };
 
   if (loading) {
     return (
       <Flex justify="center" mt={20}>
         <Spinner size="xl" />
       </Flex>
-    );
-  }
-
-  if (!users || users.length === 0) {
-    return (
-      <Box p={8}>
-        <Heading size="lg" mb={4}>
-          Users Management
-        </Heading>
-        <Text>No users found.</Text>
-      </Box>
     );
   }
 
@@ -73,34 +56,36 @@ export default function UsersPage() {
           Users Management
         </Heading>
         <Spacer />
-        <Button bg="green.500" color="white" _hover={{ bg: 'green.600' }}>
+        <Button bg="green.500" color="white" _hover={{ bg: 'green.600' }} onClick={onOpen}>
           Add New User
         </Button>
       </Flex>
+<AddUserModal isOpen={isOpen} onClose={onClose} onUserAdded={handleUserAdded} />
 
-      <Box borderRadius="lg" overflow="hidden" boxShadow="md" bg="white">
+
+      <Box borderRadius="lg" overflow="auto" boxShadow="md" bg="white">
         <Table variant="simple">
           <Thead bg="green.500">
             <Tr>
-              <Th color="white">UserName</Th>
+              <Th color="white">Username</Th>
               <Th color="white">Name</Th>
+              <Th color="white">Phone</Th>
+              <Th color="white">City</Th>
+              <Th color="white">Street</Th>
               <Th color="white">Email</Th>
-              <Th color="white">Role</Th>
+              <Th color="white">Roles</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {users.map(({ username, name, email, roles }) => (
-              <Tr
-                key={username}
-                _hover={{
-                  bg: 'green.50',
-                }}
-                transition="background 0.2s"
-              >
-                <Td>{username}</Td>
-                <Td>{name}</Td>
-                <Td>{email}</Td>
-                <Td>{roles}</Td>
+            {users?.map((user) => (
+              <Tr key={user.username} _hover={{ bg: 'green.50' }} transition="background 0.2s">
+                <Td>{user.username}</Td>
+                <Td>{user.name}</Td>
+                <Td>{user.phone}</Td>
+                <Td>{user.city}</Td>
+                <Td>{user.street}</Td>
+                <Td>{user.email}</Td>
+                <Td>{user.roles.join(', ')}</Td>
               </Tr>
             ))}
           </Tbody>
