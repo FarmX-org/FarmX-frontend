@@ -1,42 +1,112 @@
 'use client';
-import { Box, Button, Flex, Heading, Image, Input, Table, Tbody, Td, Th, Thead, Tr, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { Box,
+   Button, 
+   Flex,
+    Heading,
+     Image, 
+     Input, 
+     Table,
+     Tbody,
+      Td,
+      Th,
+      Thead,
+       Tr,
+      Text,
+       useToast,
+       } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
 import cartGif from "../../public/images/cart2.json";
 import cart2Gif from "../../public/images/emptycart.json";
+import { apiRequest } from "@/lib/api";
+
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Tomato",
-      price: 2.99,
-      quantity: 1,
-      image: "./images/Tomato.png",
-    },
-  ]);
+const [cart, setCart] = useState<{ items: any[]; totalPrice: number }>({ items: [], totalPrice: 0 });
+  const toast = useToast();
 
-  const increaseQuantity = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) => item.id === id ? { ...item, quantity: item.quantity + 1 } : item)
-    );
+  const fetchCartItems = async () => {
+    try {
+      const cartData  = await apiRequest("/cart");
+      console.log("CART ITEM", cartData.items[0]);
+
+      setCart(cartData );
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+  const increaseQuantity = async(ItemID:number) =>{
+    const item = cart.items.find((item) => item.id === ItemID);
+    if (!item) return;
+
+    try {
+      await apiRequest(`/cart/items/${ItemID}`, "PUT", { 
+        quantity: item.quantity + 1
+      });
+
+      fetchCartItems();
+      } catch (err: any) {
+        toast({
+          title: "Error",
+          description: err.message,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
   };
 
-  const decreaseQuantity = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  const decreaseQuantity = async(ItemID:number) => {
+    const item = cart.items.find((item) => item.id === ItemID);
+    if (!item) return;
+
+    try {
+      await apiRequest(`/cart/items/${ItemID}`, "PUT", { 
+        quantity: item.quantity - 1
+      });
+      if (item.quantity <= 1) return; 
+
+
+      fetchCartItems();
+      } catch (err: any) {
+        toast({
+          title: "Error",
+          description: err.message,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+
+  const clearCart = async () => {
+  if (!confirm("Are you sure you want to clear the cart?")) return;
+
+    try {
+      await apiRequest("/cart/clear", "DELETE");
+      fetchCartItems();
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
+
 
   return (
     <Box p={{ base: 4, md: 8 }}>
@@ -50,7 +120,7 @@ const CartPage = () => {
 
   <Box w={{ base: "150px", md: "200px" }}>
     <Lottie
-    animationData={cartItems.length === 0 ? cart2Gif : cartGif}
+    animationData={cart.items.length === 0 ? cart2Gif : cartGif}
     loop={true}
       style={{ width: "100%", height: "auto" }}
     />
@@ -62,7 +132,7 @@ const CartPage = () => {
 </Flex>
 
 
-      {cartItems.length === 0 ? (
+      {cart.items.length === 0 ? (
         <Text fontSize="xl" textAlign="center">Your cart is empty! Please add some items.</Text>
       ) : (
         <>
@@ -77,15 +147,15 @@ const CartPage = () => {
                 </Tr>
               </Thead>
               <Tbody>
-                {cartItems.map((item) => (
+                {cart.items.map((item) => (
                   <Tr key={item.id}>
                     <Td>
                       <Flex align="center" gap={4}>
-                        <Image src={item.image} alt={item.name} boxSize="50px" />
-                        <Text fontWeight="bold">{item.name}</Text>
+                        <Image src={item.productImage} alt={item.productName} boxSize="50px" />
+                        <Text fontWeight="bold">{item.productName}</Text>
                       </Flex>
                     </Td>
-                    <Td>${item.price.toFixed(2)}</Td>
+                    <Td>${item.productPrice.toFixed(2)}</Td>
                     <Td>
                       <Flex align="center" gap={2}>
                         <Button size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
@@ -99,7 +169,7 @@ const CartPage = () => {
                         <Button size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
                       </Flex>
                     </Td>
-                    <Td>${(item.price * item.quantity).toFixed(2)}</Td>
+                    <Td>${(item.productPrice * item.quantity).toFixed(2)}</Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -108,14 +178,14 @@ const CartPage = () => {
 
           <Box display={{ base: "block", md: "none" }}>
             <Flex direction="column" gap={4}>
-              {cartItems.map((item) => (
+              {cart.items.map((item) => (
                 <Box key={item.id} borderWidth="1px" borderRadius="lg" p={4} boxShadow="md">
                   <Flex align="center" gap={4}>
                     <Image src={item.image} alt={item.name} boxSize="60px" />
                     <Text fontWeight="bold" fontSize="lg">{item.name}</Text>
                   </Flex>
 
-                  <Text mt={2}>Price: ${item.price.toFixed(2)}</Text>
+                  <Text mt={2}>Price: ${item.productPrice.toFixed(2)}</Text>
 
                   <Flex align="center" gap={2} mt={2}>
                     <Button size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
@@ -130,7 +200,7 @@ const CartPage = () => {
                   </Flex>
 
                   <Text mt={2} fontWeight="bold">
-                    Total: ${(item.price * item.quantity).toFixed(2)}
+                    Total: ${(item.productPrice * item.quantity).toFixed(2)}
                   </Text>
                 </Box>
               ))}
@@ -149,8 +219,9 @@ const CartPage = () => {
             </Button>
 
             <Box textAlign={{ base: "left", md: "right" }}>
-              <Text fontSize="lg">Subtotal: ${subtotal.toFixed(2)}</Text>
-              <Text fontSize="xl" fontWeight="bold">Total: ${subtotal.toFixed(2)}</Text>
+              <Text fontSize="lg">Subtotal: ${cart.totalPrice.toFixed(2)}</Text>
+              <Text fontSize="xl" fontWeight="bold">Total: ${cart.totalPrice.toFixed(2)}</Text>
+
               <Button colorScheme="green" size="lg" mt={4} width={{ base: "100%", md: "auto" }}>
                 Proceed to Checkout
               </Button>

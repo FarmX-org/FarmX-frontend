@@ -85,9 +85,32 @@ const data = await apiRequest("/api/products" );
 });
 
 
-  const handleAddToCart = (id: number, quantity: number) => {
+  const handleAddToCart = async  (id: number, quantity: number) => {
     const product = products.find((p) => p.id === id);
     if (!product) return;
+    try{
+      await apiRequest("/cart/items", "POST", {
+        productId: id,
+        quantity: quantity,
+      });
+      toast({
+        title: "Added to Cart",
+        description: `Product #${id} with quantity ${quantity} added to cart.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      })
+      } catch (err: any) {
+        toast({
+          title: "Error adding to cart",
+          description: err.message,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      
+    }
+    
 
     const cartRect = cartRef.current?.getBoundingClientRect();
     if (cartRect) {
