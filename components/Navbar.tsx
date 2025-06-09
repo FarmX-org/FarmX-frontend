@@ -120,13 +120,13 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
   ];
 
   const adminLinks = [
-     { label: 'Crops', href: '/farms/[id]/crops' },
-    { label: 'Store', href: '/store' },
-    { label: 'Activity', href: '/activites' },
-    { label: 'Farms', href: '/farms' },
+    { label: 'Dashboard', href: '/admin' },
+    
   ];
   const consumerLinks = [
     { label: 'Store', href: '/store' },
+    { label: 'Orders', href: '/consumerOrders' },
+
   ];
 
   const displayedLinks = [

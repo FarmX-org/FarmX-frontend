@@ -102,6 +102,20 @@ const [cart, setCart] = useState<{ items: any[]; totalPrice: number }>({ items: 
       });
     }
   };
+  const handleCheckout = async () => {
+    try {
+      await apiRequest("/orders/from-cart", "POST");
+      clearCart();
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   useEffect(() => {
     fetchCartItems();
@@ -222,7 +236,12 @@ const [cart, setCart] = useState<{ items: any[]; totalPrice: number }>({ items: 
               <Text fontSize="lg">Subtotal: ${cart.totalPrice.toFixed(2)}</Text>
               <Text fontSize="xl" fontWeight="bold">Total: ${cart.totalPrice.toFixed(2)}</Text>
 
-              <Button colorScheme="green" size="lg" mt={4} width={{ base: "100%", md: "auto" }}>
+              <Button 
+              colorScheme="green" 
+              size="lg" mt={4} 
+              width={{ base: "100%", md: "auto" }}
+              onClick={handleCheckout}
+              >
                 Proceed to Checkout
               </Button>
             </Box>

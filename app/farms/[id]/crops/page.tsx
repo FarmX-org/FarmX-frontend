@@ -238,7 +238,7 @@ const handleQuantityUpdate = async (newQuantity: number, cropId: number) => {
       return;
     }
 
-await apiRequest("/api/products", "POST", {
+await apiRequest("/products", "POST", {
   ...data,
   available: true
 });
