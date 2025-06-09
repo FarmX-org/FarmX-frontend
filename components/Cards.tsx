@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Image,
@@ -18,14 +18,18 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+
 } from "@chakra-ui/react";
 import { MdAddShoppingCart, MdStar, MdStarBorder, MdShoppingCart, MdEdit, MdDelete, MdLocalShipping } from "react-icons/md";
 import { motion } from "framer-motion";
 import useSound from 'use-sound';
 
+
+
 const flipSound = "/sounds/flip.wav";
 const addToCartSound = "/sounds/Add.mp3";
 const ratingSound = "/sounds/rating.mp3"; 
+
 
 const MotionBox = motion(Box);
 
@@ -98,6 +102,7 @@ export const Cards = ({
   const [selectedQty, setSelectedQty] = useState(1);
   const [rating, setRating] = useState(0);
   const toast = useToast();
+  const [isConsumer, setIsConsumer] = useState(false);
 
   const handleAdd = () => {
     if (onAddToCart) onAddToCart(id, 1);
@@ -120,6 +125,22 @@ export const Cards = ({
       position: "top",
     });
   };
+ useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const roleString = localStorage.getItem('roles');
+    if (roleString) {
+      try {
+        const roles = JSON.parse(roleString);
+        console.log("Parsed roles:", roles);
+        setIsConsumer(Array.isArray(roles) && roles.includes('ROLE_CONSUMER'));
+      } catch (e) {
+        console.error("Failed to parse roles from localStorage", e);
+        setIsConsumer(false);
+      }
+    }
+  }
+}, []);
+
 
   return (
     <Box
@@ -301,7 +322,7 @@ export const Cards = ({
       ⭐ Rated {rating || 4.2}/5 by 120 users
     </Text>
 
-    <Flex align="center" gap={2} justify="center">
+    {isConsumer &&<Flex align="center" gap={2} justify="center">
       <Text fontSize="sm">Quantity:</Text>
       <NumberInput
         size="sm"
@@ -316,9 +337,9 @@ export const Cards = ({
           <NumberDecrementStepper onClick={(e) => e.stopPropagation()} />
         </NumberInputStepper>
       </NumberInput>
-    </Flex>
+    </Flex>}
 
-    <Flex justify="center">
+    {isConsumer && <Flex justify="center">
       <Button
         size="sm"
         colorScheme="green"
@@ -331,7 +352,7 @@ export const Cards = ({
       >
         Add to Cart
       </Button>
-    </Flex>
+    </Flex>}
 
     {price !== undefined && (
       <Text fontSize="md" fontWeight="bold" color="teal.600" textAlign="center">

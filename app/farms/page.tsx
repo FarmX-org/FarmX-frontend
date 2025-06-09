@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 import { motion } from "framer-motion";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdMessage } from "react-icons/md";
 const MotionCard = motion(Card);
 
 
@@ -231,15 +231,26 @@ useEffect(() => {
                       colorScheme="green"
                       onClick={() => router.push(`/farms/${farm.id}/crops`)}
                     >
-                      View Crops
+                      View Crops 🌱
                     </Button>
+
+
+                   <Button
+    size="sm"
+    colorScheme="green"
+    variant="outline"
+    leftIcon={<MdMessage />}
+    onClick={() => router.push(`/farms/${farm.id}/farmOrders`)}
+  >
+    Orders
+  </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       colorScheme="green"
                       onClick={() => handleEditFarm(farm.id)}
+                      leftIcon={<MdEdit />}
                     >
-                      <MdEdit />
                       Edit
                     </Button>
                     <Button
@@ -247,8 +258,8 @@ useEffect(() => {
                       variant="outline"
                       colorScheme="green"
                       onClick={() => setDeletingFarmId(farm.id)}
+                      leftIcon={<MdDelete />}
                     >
-                      <MdDelete/>
                       Delete
                     </Button>
                   </Flex>

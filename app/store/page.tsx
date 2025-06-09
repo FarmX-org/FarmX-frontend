@@ -36,6 +36,9 @@ const StorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [flyingItem, setFlyingItem] = useState<null | Product>(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
+    const [isConsumer, setIsConsumer] = useState(false);
+  
+
 
   const router = useRouter();
 
@@ -157,6 +160,23 @@ const data = await apiRequest("/products/store" );
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const roleString = localStorage.getItem('roles');
+    if (roleString) {
+      try {
+        const roles = JSON.parse(roleString); 
+        console.log("Parsed roles:", roles);
+        setIsConsumer(Array.isArray(roles) && roles.includes('ROLE_CONSUMER'));
+      } catch (e) {
+        console.error("Failed to parse roles from localStorage", e);
+        setIsConsumer(false);
+      }
+    }
+  }
+}, []);
+
   return (
     <Flex>
       <Sidebar
@@ -224,7 +244,7 @@ const data = await apiRequest("/products/store" );
         
         )}
 
-        <Box
+        {isConsumer&&<Box
           ref={cartRef}
           position="fixed"
           bottom="20px"
@@ -238,7 +258,7 @@ const data = await apiRequest("/products/store" );
           <MdShoppingCart size={30} color="green" 
           onClick={() => router.push("/cart")}
           />
-        </Box>
+        </Box>}
       </Box>
     </Flex>
   );

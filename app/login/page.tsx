@@ -31,6 +31,8 @@ const LoginPage = () => {
   
 
   const handleLogin = async (e: React.FormEvent) => {
+    console.log("Login button clicked");
+
     e.preventDefault();
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, {
