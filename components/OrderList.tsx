@@ -1,4 +1,3 @@
-// components/OrderCard.tsx
 'use client';
 import {
   Box,
@@ -17,6 +16,7 @@ import Countdown from 'react-countdown';
 import { useState } from 'react';
 import { apiRequest } from '@/lib/api';
 
+// ---------- INTERFACES ----------
 interface OrderItemDTO {
   productName: string;
   quantity: number;
@@ -40,14 +40,26 @@ interface OrderDTO {
   farmOrders: FarmOrderDTO[];
 }
 
-interface OrderCardProps {
-  type: 'CONSUMER' | 'FARMER';
-  order: OrderDTO | FarmOrderDTO;
+interface HandlerOrderDTO {
+  id: number;
+  orderStatus: string;
+  deliveryTime: string;
+  totalAmount: number;
+  items: OrderItemDTO[];
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ type, order }) => {
+// ---------- PROPS ----------
+interface OrderCardProps {
+  type: 'CONSUMER' | 'FARMER' | 'HANDLER'; 
+  order: OrderDTO | FarmOrderDTO | HandlerOrderDTO;
+  onUpdate?: (orderId: number, status: string, deliveryTime?: string) => void;
+}
+
+// ---------- COMPONENT ----------
+const OrderCard: React.FC<OrderCardProps> = ({ type, order, onUpdate }) => {
   const cardBg = useColorModeValue('gray.50', 'gray.700');
   const sectionBg = useColorModeValue('white', 'gray.800');
+  
 
   const getBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -62,40 +74,17 @@ const OrderCard: React.FC<OrderCardProps> = ({ type, order }) => {
     }
   };
 
-  const [status, setStatus] = useState(order.orderStatus);
-  const [deliveryTime, setDeliveryTime] = useState(
-    'deliveryTime' in order ? order.deliveryTime : ''
-  );
-
-  const handleUpdate = async () => {
-  try {
-    let url = `/orders/farm-order/${order.id}/status?status=${encodeURIComponent(status)}`;
-
-    if (deliveryTime) {
-      url += `&deliveryTime=${encodeURIComponent(deliveryTime)}`;
-    }
-
-    await apiRequest(url, 'PUT');
-
-    alert('Order updated!');
-  } catch (error) {
-    console.error('Error updating order:', error);
-    alert('Failed to update order.');
-  }
-};
-
-
-  if (type === 'CONSUMER') {
-    const orderDTO = order as OrderDTO;
+  // ---------- CONSUMER ----------
+  if (type === 'CONSUMER' && 'farmOrders' in order) {
     return (
       <Box p={6} borderRadius="xl" bg={cardBg} boxShadow="md">
-        <Heading size="md" mb={2}>Order #{orderDTO.id}</Heading>
-        <Text>Status: <Badge colorScheme={getBadgeColor(orderDTO.orderStatus)}>{orderDTO.orderStatus}</Badge></Text>
-        <Text>Total: <strong>{orderDTO.totalAmount}₪</strong></Text>
+        <Heading size="md" mb={2}>Order #{order.id}</Heading>
+        <Text>Status: <Badge colorScheme={getBadgeColor(order.orderStatus)}>{order.orderStatus}</Badge></Text>
+        <Text>Total: <strong>{order.totalAmount}₪</strong></Text>
         <Text>
           Estimated Delivery:{' '}
-          {orderDTO.orderStatus === 'READY' ? (
-            <Countdown date={new Date(orderDTO.estimatedDeliveryTime)} />
+          {order.orderStatus === 'READY' ? (
+            <Countdown date={new Date(order.estimatedDeliveryTime)} />
           ) : (
             'Not ready yet'
           )}
@@ -104,7 +93,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ type, order }) => {
         <Divider my={4} />
 
         <VStack align="stretch" spacing={4}>
-          {orderDTO.farmOrders.map((farm) => (
+          {order.farmOrders.map((farm) => (
             <Box key={farm.id} p={4} bg={sectionBg} borderRadius="lg">
               <Heading size="sm" mb={2}>Farm: {farm.farmName}</Heading>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
@@ -123,40 +112,129 @@ const OrderCard: React.FC<OrderCardProps> = ({ type, order }) => {
     );
   }
 
-  const farmOrder = order as FarmOrderDTO;
+  // ---------- HANDLER ----------
+if (type === 'HANDLER' && 'farmOrders' in order) {
+  const [status, setStatus] = useState(order.orderStatus);
+  const [estimatedTime, setEstimatedTime] = useState(order.estimatedDeliveryTime || '');
+  const formattedTime = estimatedTime.length === 16 ? `${estimatedTime}:00` : estimatedTime;
+
+
+  const handleUpdate = async () => {
+    try {
+     const url = `/orders/handler/${order.id}/status?status=${encodeURIComponent(status)}&estimatedDeliveryTime=${encodeURIComponent(formattedTime)}`;
+     await apiRequest(url, 'PUT');
+ 
+      onUpdate?.(order.id, status);
+      alert('Order updated!');
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Failed to update order.');
+    }
+  };
+
   return (
     <Box p={6} borderRadius="xl" bg={cardBg} boxShadow="md">
-      <Heading size="md" mb={2}>Order #{farmOrder.id}</Heading>
-      <Text>Farm: <strong>{farmOrder.farmName}</strong></Text>
+      <Heading size="md" mb={2}>Order #{order.id}</Heading>
+      <Text>Total: <strong>{order.totalAmount}₪</strong></Text>
 
       <Text>Status:</Text>
-<Select value={status} onChange={(e) => setStatus(e.target.value)}>
-  <option value="PENDING">PENDING</option>
-  <option value="READY">READY</option>
-  <option value="DELIVERED">DELIVERED</option>
-</Select>
-      <Text mt={2}>Delivery Time:</Text>
+      <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <option value="PENDING">PENDING</option>
+        <option value="READY">READY</option>
+        <option value="DELIVERED">DELIVERED</option>
+      </Select>
+
+      <Text mt={2}>Estimated Delivery Time:</Text>
       <Input
         type="datetime-local"
-        value={deliveryTime}
-        onChange={(e) => setDeliveryTime(e.target.value)}
+        value={estimatedTime}
+        onChange={(e) => setEstimatedTime(e.target.value)}
       />
 
       <Button mt={3} colorScheme="green" onClick={handleUpdate}>Save</Button>
 
       <Divider my={4} />
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
-        {farmOrder.items.map((item, idx) => (
-          <Box key={idx} p={3} bg="gray.100" borderRadius="md">
-            <Text><strong>Product:</strong> {item.productName}</Text>
-            <Text><strong>Quantity:</strong> {item.quantity}</Text>
-            <Text><strong>Price:</strong> {item.price}₪</Text>
+      <VStack align="stretch" spacing={4}>
+        {order.farmOrders.map((farm) => (
+          <Box key={farm.id} p={4} bg={sectionBg} borderRadius="lg">
+            <Heading size="sm" mb={2}>Farm: {farm.farmName}</Heading>
+            <Text>Status: <Badge colorScheme={getBadgeColor(farm.orderStatus)}>{farm.orderStatus}</Badge></Text>
+            <Text>Delivery Time: {farm.deliveryTime}</Text>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} mt={3}>
+              {farm.items.map((item, idx) => (
+                <Box key={idx} p={3} bg="gray.100" borderRadius="md">
+                  <Text><strong>Product:</strong> {item.productName}</Text>
+                  <Text><strong>Quantity:</strong> {item.quantity}</Text>
+                  <Text><strong>Price:</strong> {item.price}₪</Text>
+                </Box>
+              ))}
+            </SimpleGrid>
           </Box>
         ))}
-      </SimpleGrid>
+      </VStack>
     </Box>
   );
+}
+
+
+
+  // ---------- FARMER ----------
+  if (type === 'FARMER' && 'farmName' in order) {
+    const [status, setStatus] = useState(order.orderStatus);
+    const [deliveryTime, setDeliveryTime] = useState(order.deliveryTime);
+
+    const handleUpdate = async () => {
+      try {
+        let url = `/orders/farm-order/${order.id}/status?status=${encodeURIComponent(status)}`;
+        if (deliveryTime) {
+          url += `&deliveryTime=${encodeURIComponent(deliveryTime)}`;
+        }
+        await apiRequest(url, 'PUT');
+        onUpdate?.(order.id, status, deliveryTime);
+        alert('Order updated!');
+      } catch (error) {
+        console.error('Error updating order:', error);
+        alert('Failed to update order.');
+      }
+    };
+
+    return (
+      <Box p={6} borderRadius="xl" bg={cardBg} boxShadow="md">
+        <Heading size="md" mb={2}>Order #{order.id}</Heading>
+        <Text>Farm: <strong>{order.farmName}</strong></Text>
+
+        <Text>Status:</Text>
+        <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="PENDING">PENDING</option>
+          <option value="READY">READY</option>
+          <option value="DELIVERED">DELIVERED</option>
+        </Select>
+
+        <Text mt={2}>Delivery Time:</Text>
+        <Input
+          type="datetime-local"
+          value={deliveryTime}
+          onChange={(e) => setDeliveryTime(e.target.value)}
+        />
+
+        <Button mt={3} colorScheme="green" onClick={handleUpdate}>Save</Button>
+
+        <Divider my={4} />
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
+          {order.items.map((item, idx) => (
+            <Box key={idx} p={3} bg="gray.100" borderRadius="md">
+              <Text><strong>Product:</strong> {item.productName}</Text>
+              <Text><strong>Quantity:</strong> {item.quantity}</Text>
+              <Text><strong>Price:</strong> {item.price}₪</Text>
+            </Box>
+          ))}
+        </SimpleGrid>
+      </Box>
+    );
+  }
+
+  return null; // fallback
 };
 
 export default OrderCard;
