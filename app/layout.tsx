@@ -27,7 +27,7 @@ export default function RootLayout({
   }, []);
 
 
-  const hideNotifications = pathname === "/login" || pathname === "/signup"|| !isLoggedIn;
+  const hideNotifications = pathname === "/login" || pathname === "/signup"|| !isLoggedIn || pathname === "/admin" ;
 
   return (
     <html lang="en">
