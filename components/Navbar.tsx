@@ -102,8 +102,10 @@ useEffect(() => {
 
   
 const isFarmer = user?.roles?.includes('ROLE_FARMER');
-  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
-  const isConsumer = user?.roles?.includes('ROLE_CONSUMER');
+const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+const isConsumer = user?.roles?.includes('ROLE_CONSUMER');
+const isHandler = user?.roles?.includes('ROLE_HANDLER');
+
 
 
   const commonLinks = [
@@ -128,12 +130,16 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
     { label: 'Orders', href: '/consumerOrders' },
 
   ];
+  const handlerLinks = [
+    { label: 'Orders', href: '/handler' },
+  ];
 
   const displayedLinks = [
     ...commonLinks,
     ...(isFarmer ? farmerLinks : []),
     ...(isAdmin ? adminLinks : []),
     ...(isConsumer ? consumerLinks : []),
+    ...(isHandler ? handlerLinks : []),
   ];
 
   return (
@@ -152,7 +158,7 @@ const isFarmer = user?.roles?.includes('ROLE_FARMER');
         </HStack>
 
         <HStack spacing={4} color="white">
-          {user && (
+          {user && isFarmer && (
             <Tooltip label="Ai Suggestion" hasArrow>
               <Link href="/dashboard" px={2}>
                 <FaBrain size={20} />
