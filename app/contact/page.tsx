@@ -15,11 +15,12 @@ import {
   Flex
 } from "@chakra-ui/react";
 import { MdEmail, MdPerson, MdMessage } from "react-icons/md";
-import { motion } from "framer-motion";
 import { FaInstagram, FaFacebook } from "react-icons/fa";
-import Lottie from "lottie-react";
 import contactGif from "../../public/images/contact.json";
-import { Mali } from "next/font/google";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+});
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({

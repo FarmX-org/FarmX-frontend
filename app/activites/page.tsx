@@ -6,7 +6,11 @@ import {
 import { MdAdd, MdEdit, MdDelete } from "react-icons/md";
 import { motion } from "framer-motion";
 import activityGif from "../../public/images/activity.json";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+});
+
 
 interface Activity {
   id: number;
