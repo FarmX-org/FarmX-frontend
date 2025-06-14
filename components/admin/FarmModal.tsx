@@ -12,30 +12,13 @@ import { useMapEvent } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-interface FarmModalProps {
+// ✅ مهم نصدّرها عشان تستخدم بـ dynamic
+export interface FarmModalProps {
   isOpen: boolean;
   onClose: () => void;
   farmId?: number | null;
   onSuccess?: () => void;
 }
-
-// إصلاح أيقونة leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
-
-// dynamic imports للخريطة
-const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
-
-const MapClickHandler = ({ onClick }: { onClick: (e: any) => void }) => {
-  useMapEvent("click", onClick);
-  return null;
-};
 
 const FarmModal = ({ isOpen, onClose, farmId, onSuccess }: FarmModalProps) => {
   const isEditMode = !!farmId;
@@ -46,8 +29,25 @@ const FarmModal = ({ isOpen, onClose, farmId, onSuccess }: FarmModalProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const toast = useToast();
+
+  const MapClickHandler = ({ onClick }: { onClick: (e: any) => void }) => {
+    useMapEvent("click", onClick);
+    return null;
+  };
+
+  const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
+  const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
+  const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
+
+  useEffect(() => {
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    });
+  }, []);
 
   useEffect(() => {
     if (isEditMode && farmId) {
