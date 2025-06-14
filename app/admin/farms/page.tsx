@@ -30,10 +30,14 @@ import {
   Card,
 } from "@chakra-ui/react";
 import { apiRequest } from "@/lib/api";
-import FarmModal from "@/components/admin/FarmModal";
+import dynamic from "next/dynamic";
+const FarmModal = dynamic(() => import("@/components/admin/FarmModal"), { ssr: false });
 import { motion } from "framer-motion";
 
-const MotionCard = motion(Card);
+const MotionCard = dynamic(() =>
+  import("framer-motion").then((mod) => mod.motion(Card)),
+  { ssr: false }
+);
 
 interface Farm {
   id: number;
