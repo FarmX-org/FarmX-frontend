@@ -7,11 +7,13 @@ import { Image, Box, Flex, SimpleGrid, useToast, useDisclosure } from "@chakra-u
 import { apiRequest } from "@/lib/api";
 import CropModal from "@/components/CropModal";
 import SendToStoreModal from "@/components/SendToStoreModal";
-import Lottie from "lottie-react";
 import farmGif from "../../public/images/farm.json";
 import flowerGif from "../../public/images/flower.json";
 import { useRouter } from "next/navigation";
-
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+});
 interface BaseCrop {
   id: number;
   name: string;

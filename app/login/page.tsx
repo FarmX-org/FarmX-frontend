@@ -21,8 +21,11 @@ import {
 } from "@chakra-ui/react";
 import { FaUser, FaLock } from "react-icons/fa";
 import cloudGif from "../../public/images/cloud.json";
-import Lottie from "lottie-react";
 import NextLink from "next/link";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+});
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");

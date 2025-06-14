@@ -15,10 +15,14 @@ import { Box,
        useToast,
        } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import Lottie from "lottie-react";
 import cartGif from "../../public/images/cart2.json";
 import cart2Gif from "../../public/images/emptycart.json";
 import { apiRequest } from "@/lib/api";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), {
+  ssr: false,
+});
+
 
 
 const CartPage = () => {
