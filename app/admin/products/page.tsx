@@ -40,7 +40,7 @@ export default function ProductsAdminPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest("/api/products");
+      const data = await apiRequest("/products");
       setProducts(data);
     } catch (err: any) {
       toast({ status: "error", description: err.message || "Failed to fetch products " });
@@ -51,7 +51,7 @@ export default function ProductsAdminPage() {
 
   const handleUpdate = async (updatedProduct: Product) => {
     try {
-      await apiRequest(`/api/products/${updatedProduct.id}`, "PUT", updatedProduct);
+      await apiRequest(`/products/${updatedProduct.id}`, "PUT", updatedProduct);
       toast({ status: "success", description: "Updated successfully " });
       onClose();
       fetchProducts();
@@ -62,7 +62,7 @@ export default function ProductsAdminPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      await apiRequest(`/api/products/${id}`, "DELETE");
+      await apiRequest(`/products/${id}`, "DELETE");
       toast({ status: "info", description: "Deleted successfully" });
       fetchProducts();
     } catch (err: any) {
