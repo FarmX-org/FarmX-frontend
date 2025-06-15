@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 
 import { useEffect, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
@@ -9,8 +9,9 @@ import { ThreeEvent } from "@react-three/fiber";
 const MODEL_URL = "/images/scenewithanimal.glb";
 
 const Model = () => {
-  const { scene } = useGLTF(MODEL_URL);
   const router = useRouter();
+
+  const { scene } = useGLTF(MODEL_URL);
 
   const optimizedScene = useMemo(() => scene.clone(), [scene]);
 
