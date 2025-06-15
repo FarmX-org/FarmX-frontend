@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "/images/3d.glb";
+const MODEL_URL = "/images/scenewithanimal.glb";
 
 
 const Model = () => {
