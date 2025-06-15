@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "http://localhost:3000/api/model";
+const MODEL_URL = "/images/scenewithanimal.glb"; 
 
 const Model = () => {
-  const { scene } = useGLTF(MODEL_URL); 
+  const { scene } = useGLTF(MODEL_URL);
   const router = useRouter();
 
   const optimizedScene = useMemo(() => scene.clone(), [scene]);
@@ -16,11 +16,12 @@ const Model = () => {
     optimizedScene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.name === "Ground_barn_2_0") {
         child.userData.link = "/cropShowcase";
-      }
-      else if(child instanceof THREE.Mesh && child.name === "Cube029_wall_texture_0"){
+      } else if (
+        child instanceof THREE.Mesh &&
+        child.name === "Cube029_wall_texture_0"
+      ) {
         child.userData.link = "/store";
       }
-      
     });
   }, [optimizedScene]);
 

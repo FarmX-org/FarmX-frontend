@@ -23,9 +23,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@styles/*": ["./styles/*"]
-
+      "@/*": [
+        "./*"
+      ],
+      "@styles/*": [
+        "./styles/*"
+      ]
     }
   },
   "include": [
@@ -36,5 +39,6 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }
