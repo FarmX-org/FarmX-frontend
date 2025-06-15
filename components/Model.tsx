@@ -8,12 +8,14 @@ import { ThreeEvent } from "@react-three/fiber";
 
 const MODEL_URL = "/images/scenewithanimal.glb";
 
+
 const Model = () => {
   const router = useRouter();
 
   const { scene } = useGLTF(MODEL_URL);
 
   const optimizedScene = useMemo(() => scene.clone(), [scene]);
+  console.log("Loading model from:", MODEL_URL);
 
   useEffect(() => {
     optimizedScene.traverse((child) => {
