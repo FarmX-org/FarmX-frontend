@@ -22,20 +22,19 @@ const Home = () => {
         <directionalLight position={[5, 10, 5]} intensity={1.5} />
         <Sky sunPosition={[100, 20, 100]} turbidity={8} rayleigh={1.0} />
 
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={null}>
           <Model />
         </Suspense>
 
         <FirstPersonControls
-         movementSpeed={6} 
-        lookSpeed={0.04}
-        lookVertical={true}
-        constrainVertical={true}
-        verticalMin={1.0} 
-        verticalMax={2.0}
-         />
-
-        </Canvas>
+          movementSpeed={6} 
+          lookSpeed={0.04}
+          lookVertical={true}
+          constrainVertical={true}
+          verticalMin={1.0} 
+          verticalMax={2.0}
+        />
+      </Canvas>
     </div>
   );
 };
