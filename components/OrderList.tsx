@@ -13,10 +13,22 @@ import {
   useColorModeValue,
   useToast,
   HStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  
 } from '@chakra-ui/react';
 import Countdown from 'react-countdown';
 import { useState } from 'react';
 import { apiRequest } from '@/lib/api';
+import { useDisclosure } from '@chakra-ui/react';
+import { PinInput, PinInputField } from '@chakra-ui/react';
+
+
 
 interface OrderItemDTO {
   productName: string;
@@ -62,9 +74,35 @@ const OrderCard: React.FC<OrderCardProps> = ({ type, order, onUpdate }) => {
 const [statusFilter, setStatusFilter] = useState('');
 const [orderIdFilter, setOrderIdFilter] = useState('');
   const [filteredOrders, setFilteredOrders] = useState([] as (OrderDTO | FarmOrderDTO | HandlerOrderDTO)[]);
-  
+   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [otp, setOtp] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
+const confirmDelivery = async () => {
+    setSubmitting(true);
+    try {
+      await apiRequest(`/orders/handler/${order.id}/deliver?code=${otp}`, 'PUT');
+      toast({
+        title: 'Delivery confirmed!',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      onClose();
+      onUpdate?.(order.id, 'DELIVERED'); 
 
+    } catch (err: any) {
+      toast({
+        title: 'Error confirming delivery',
+        description: err?.response?.data?.message || 'pin code is incorrect',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const getBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -168,6 +206,61 @@ const [orderIdFilter, setOrderIdFilter] = useState('');
         <Input type="datetime-local" value={estimatedTime} onChange={(e) => setEstimatedTime(e.target.value)} />
 
         <Button mt={3} colorScheme="green" onClick={handleUpdate}>Save</Button>
+
+        {status === 'READY' && (
+  <>
+    <Button mt={3} colorScheme="green" variant={'outline'} onClick={onOpen}>
+       Confirm Delivery
+    </Button>
+
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Confirm Delivery for Order #{order.id}</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+        <HStack spacing={4} justify="center" mt={4}>
+  <PinInput
+    otp
+    onComplete={(value) => setOtp(value)}
+  >
+    {[...Array(6)].map((_, idx) => (
+      <PinInputField
+        key={idx}
+        borderRadius="md"
+        borderWidth="2px"
+        borderColor="green.500"
+        _focus={{ borderColor: "green.700", boxShadow: "0 0 0 2px #38A169" }}
+        _invalid={{ borderColor: "red.500" }}
+        w="40px"
+        h="50px"
+        fontSize="lg"
+        textAlign="center"
+      />
+    ))}
+  </PinInput>
+</HStack>
+
+
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            colorScheme="green"
+            mr={3}
+            onClick={confirmDelivery}
+            isLoading={submitting}
+          >
+            Confirm
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  </>
+)}
+
 
         <Divider my={4} />
         <VStack align="stretch" spacing={4}>
