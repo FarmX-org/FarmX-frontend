@@ -40,7 +40,7 @@ export default function ProductsAdminPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest("/products");
+      const data = await apiRequest("/products/store");
       setProducts(data);
     } catch (err: any) {
       toast({ status: "error", description: err.message || "Failed to fetch products " });
@@ -48,6 +48,44 @@ export default function ProductsAdminPage() {
       setLoading(false);
     }
   };
+
+  const exportProductsToCSV = (products: Product[]) => {
+  const headers = [
+    "ID",
+    "Crop Name",
+    "Quantity",
+    "Unit",
+    "Price",
+    "Available",
+    "Category",
+    "Description",
+  ];
+
+  const rows = products.map((prod) => [
+    prod.id,
+    prod.cropName,
+    prod.quantity,
+    prod.unit,
+    prod.price.toFixed(2),
+    prod.available ? "Yes" : "No",
+    prod.category,
+    prod.description?.replace(/[\n\r]+/g, " ") || "",
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "products_export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   const handleUpdate = async (updatedProduct: Product) => {
     try {
@@ -79,6 +117,16 @@ export default function ProductsAdminPage() {
       <Text fontSize="2xl" fontWeight="bold" mb={4} color={"green.600"}>
         Products Management 
       </Text>
+      <Button
+  colorScheme="green"
+  size="sm"
+  mb={4}
+  variant={"outline"}
+  onClick={() => exportProductsToCSV(products)}
+>
+  Export to CSV
+</Button>
+
 
       {loading ? (
         <Spinner />

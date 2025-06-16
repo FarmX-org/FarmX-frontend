@@ -41,6 +41,43 @@ export default function UsersPage() {
     setUsers((prev) => [...(prev || []), user]);
   };
 
+  const exportUsersToCSV = (users: User[]) => {
+  const headers = [
+    "Username",
+    "Name",
+    "Phone",
+    "City",
+    "Street",
+    "Email",
+    "Roles"
+  ];
+
+  const rows = users.map((user) => [
+    user.username,
+    user.name,
+    user.phone,
+    user.city,
+    user.street,
+    user.email,
+    user.roles.join(" / "),
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "users_export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
   if (loading) {
     return (
       <Flex justify="center" mt={20}>
@@ -48,6 +85,7 @@ export default function UsersPage() {
       </Flex>
     );
   }
+
 
   return (
     <Box p={8} bg="gray.50" minH="100vh">
@@ -59,6 +97,15 @@ export default function UsersPage() {
         <Button bg="green.500" color="white" _hover={{ bg: 'green.600' }} onClick={onOpen}>
           Add New User
         </Button>
+        <Button
+  colorScheme="green"
+  variant="outline"
+  size="md"
+  onClick={() => exportUsersToCSV(users || [])}
+>
+  Export to CSV
+</Button>
+
       </Flex>
 <AddUserModal isOpen={isOpen} onClose={onClose} onUserAdded={handleUserAdded} />
 

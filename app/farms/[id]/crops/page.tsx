@@ -10,6 +10,7 @@ import CropModal from "@/components/CropModal";
 import Lottie from "lottie-react";
 import farmGif from "../../../../public/images/farm.json";
 import flowerGif from "../../../../public/images/flower.json";
+import flower from "../../../../public/images/cuteFlower.png";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import SendToStoreModal from "@/components/SendToStoreModal";
@@ -424,7 +425,7 @@ await apiRequest("/products", "POST", {
 
       {showCactus && (
         <Image
-          src="./images/cuteFlower.png"
+          src={flower.src}
           alt="Peekaboo Cactus"
           position="fixed"
           bottom="-30px"
