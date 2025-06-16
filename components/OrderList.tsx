@@ -51,6 +51,7 @@ interface OrderDTO {
   orderStatus: string;
   estimatedDeliveryTime: string;
   farmOrders: FarmOrderDTO[];
+  deliveryCode?: string; 
 }
 
 interface HandlerOrderDTO {
@@ -77,6 +78,7 @@ const [orderIdFilter, setOrderIdFilter] = useState('');
    const { isOpen, onOpen, onClose } = useDisclosure();
   const [otp, setOtp] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [code, setCode] = useState('');
 
 const confirmDelivery = async () => {
     setSubmitting(true);
@@ -103,6 +105,51 @@ const confirmDelivery = async () => {
       setSubmitting(false);
     }
   };
+
+
+  const handleRegenerateCode = async () => {
+  try {
+    await apiRequest(`/orders/consumer/${order.id}/regenerate-code`, 'PUT');
+    toast({
+      title: 'New code generated successfully!',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (err: any) {
+    toast({
+      title: 'Failed to regenerate code',
+      description: err?.response?.data?.message || 'An error occurred.',
+      status: 'error',
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+};
+
+const showGenerateCode =async () => {
+  try {
+    const response = await apiRequest(`/orders/consumer/${order.id}/delivery-code`);
+    setCode(response);
+    console.log(response);
+    toast({
+      title: 'code Shown!',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (err: any) {
+    toast({
+      title: 'Failed to show code',
+      description: err?.response?.data?.message || 'An error occurred.',
+      status: 'error',
+      duration: 3000,
+      isClosable: true,
+    });
+  }
+}
+
+
 
   const getBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -141,8 +188,29 @@ const confirmDelivery = async () => {
             <Countdown date={new Date(order.estimatedDeliveryTime)} />
           ) : 'Not ready yet'}
         </Text>
-        <Divider my={4} />
+       {order.orderStatus === 'READY' && (
+  <>
+    <Button size="sm" backgroundColor="green.100" color={'green.800'} variant={'solid'} mt={2} marginRight={8} onClick={handleRegenerateCode}>
+      Regenerate Delivery Code
+    </Button>
+    <Button size="sm" backgroundColor="green.100" color={'green.800'} variant={'solid'} mt={2} onClick={showGenerateCode}>
+      Show Delivery Code
+    </Button>
 
+    {code && (
+      <Box mt={3} p={3} bg="green.50" border="1px" borderColor="green.200" borderRadius="md">
+        <Text fontWeight="bold" color="green.700" fontSize="xl">
+          Delivery Code: {code}
+        </Text>
+      </Box>
+    )}
+  </>
+)}
+
+
+
+        <Divider my={4} />
+        
         <VStack align="stretch" spacing={4}>
           {order.farmOrders.map((farm) => (
             <Box key={farm.id} p={4} bg={sectionBg} borderRadius="xl" boxShadow="md">
