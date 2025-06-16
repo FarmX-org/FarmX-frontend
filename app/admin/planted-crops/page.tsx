@@ -133,6 +133,45 @@ export default function AdminPlantedCropsDashboard() {
     fetchPlantedCrops();
   }, []);
 
+  const exportFarmCropsToCSV = (farm: FarmCropsDTO) => {
+  const headers = [
+    "Crop Name",
+    "Planted Date",
+    "Estimated Harvest Date",
+    "Actual Harvest Date",
+    "Quantity",
+    "Status",
+    "Notes",
+    "Available"
+  ];
+
+  const rows = farm.plantedCrops.map((crop) => [
+    crop.name,
+    crop.plantedDate,
+    crop.estimatedHarvestDate,
+    crop.actualHarvestDate || "",
+    crop.quantity,
+    crop.status,
+    crop.notes,
+    crop.available ? "Yes" : "No"
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", `${farm.farmName.replace(/\s+/g, "_")}_crops.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
   return (
     <Box p={6} mt={20}>
       <Box mt={10} bg="gray.50" minH="100vh">
@@ -141,7 +180,7 @@ export default function AdminPlantedCropsDashboard() {
             Planted Crops Management
           </Heading>
           <Spacer />
-         
+          
         </Flex>
 
         {loading ? (
@@ -158,6 +197,16 @@ export default function AdminPlantedCropsDashboard() {
               <Heading size="md" mb={4} color="green.500">
                 {farm.farmName}
               </Heading>
+              <Button
+  size="sm"
+  colorScheme="green"
+  variant="outline"
+  mb={3}
+  onClick={() => exportFarmCropsToCSV(farm)}
+>
+  Export Crops to CSV
+</Button>
+
               <Box borderRadius="lg" overflow="hidden" boxShadow="md" bg="white">
                 <Table variant="simple">
                   <Thead bg="green.500">

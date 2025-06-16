@@ -83,6 +83,33 @@ export default function AdminCropsDashboard() {
     setEditingId(null);
   };
 
+  const exportToCSV = () => {
+  const headers = ["ID", "Name", "Category", "Season", "Description", "Average Price"];
+  const rows = crops.map(crop => [
+    crop.id ?? "",
+    crop.name,
+    crop.category,
+    crop.season,
+    crop.description,
+    crop.averagePrice,
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "crops.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
   const handleSubmit = async () => {
     try {
       const endpoint = isEditing ? `/crops/${editingId}` : "/crops";
@@ -128,9 +155,18 @@ export default function AdminCropsDashboard() {
       Crop Management
     </Heading>
     <Spacer />
+    <HStack>
+    <Button
+      variant="outline"
+      colorScheme="green"
+      onClick={exportToCSV}
+    >
+      Export CSV
+    </Button>
     <Button bg="green.500" color="white" _hover={{ bg: 'green.600' }} onClick={() => { resetForm(); onOpen(); }}>
       Add Crop
     </Button>
+  </HStack>
   </Flex>
 
   {loading ? (

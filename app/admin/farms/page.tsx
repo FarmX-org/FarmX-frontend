@@ -106,6 +106,38 @@ export default function AdminFarmManagementPage() {
     fetchFarms();
   }, []);
 
+  const exportToCSV = (data: Farm[]) => {
+  const headers = ["ID", "Name", "Latitude", "Longitude", "Area Size", "Soil Type", "Rating", "Rating Count", "Status", "Rejection Reason"];
+  const rows = data.map(farm => [
+    farm.id,
+    farm.name,
+    farm.latitude,
+    farm.longitude,
+    farm.areaSize,
+    farm.soilType,
+    farm.rating.toFixed(2),
+    farm.ratingCount,
+    farm.status,
+    farm.rejectionReason || ""
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map(e => e.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "farms_data.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
   const changeStatus = async (id: number, status: string, reason: string | null = null) => {
     try {
       const query = new URLSearchParams({ status });
@@ -144,9 +176,15 @@ export default function AdminFarmManagementPage() {
 
   return (
     <Box p={6} mt={20}>
+      <Flex justify="space-between" align="center" mb={6}>
+        
       <Heading size="lg" color="green.700" mb={4} fontWeight="bold">
         Farm Management Panel
       </Heading>
+       <Button variant={"outline"} colorScheme="green" onClick={() => exportToCSV(farms)}>
+       Export CSV
+      </Button>
+      </Flex>
 
       <Tabs index={activeTab} onChange={setActiveTab} variant="enclosed" colorScheme="green">
         <TabList>

@@ -13,6 +13,7 @@ import {
   Heading,
   Select,
   SimpleGrid,
+  Button,
 } from "@chakra-ui/react";
 import { apiRequest } from "@/lib/api";
 
@@ -101,22 +102,93 @@ export default function AdminOrdersPage() {
     );
   }
 
+  const exportOrdersToCSV = (orders: OrderDTO[]) => {
+  const headers = [
+    "Order ID",
+    "Order Status",
+    "Created At",
+    "Total Amount",
+    "Farm Name",
+    "Farm Order Status",
+    "Delivery Time",
+    "Product Name",
+    "Quantity",
+    "Price",
+  ];
+
+  const rows: string[][] = [];
+
+  orders.forEach((order) => {
+    order.farmOrders.forEach((farmOrder) => {
+      farmOrder.items.forEach((item) => {
+        rows.push([
+          order.id.toString(),
+          order.orderStatus,
+          new Date(order.createdAt).toLocaleString(),
+          order.totalAmount.toFixed(2),
+          farmOrder.farmName,
+          farmOrder.orderStatus,
+          farmOrder.deliveryTime
+            ? new Date(farmOrder.deliveryTime).toLocaleString()
+            : "Not Set",
+          item.productName,
+          item.quantity.toString(),
+          item.price.toFixed(2),
+        ]);
+      });
+    });
+  });
+
+  const csvContent =
+    [headers, ...rows]
+      .map((e) =>
+        e.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "orders_export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
   return (
     <Box p={6}>
-      <Flex justify="space-between" align="center" mb={6} mt={10}>
-        <Heading size="lg">Orders Overview</Heading>
-        <Select
-          maxW="200px"
-          variant="filled"
-          bg="gray.100"
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="READY">Ready</option>
-          <option value="DELIVERED">Delivered</option>
-        </Select>
-      </Flex>
+      <Flex justify="space-between" align="center" mb={6} mt={10} wrap="wrap" gap={4}>
+  <Heading size="lg">Orders Overview</Heading>
+  <Flex gap={3}>
+    <Select
+      maxW="200px"
+      variant="filled"
+      bg="gray.100"
+      onChange={(e) => setStatusFilter(e.target.value)}
+    >
+      <option value="ALL">All Statuses</option>
+      <option value="PENDING">Pending</option>
+      <option value="READY">Ready</option>
+      <option value="DELIVERED">Delivered</option>
+    </Select>
+    <Button
+      px={4}
+      py={2}
+      colorScheme="green"
+      borderRadius="md"
+      variant={"outline"}
+      _hover={{ bg: "green.100" }}
+      onClick={() => exportOrdersToCSV(filteredOrders)}
+    >
+      Export CSV
+    </Button>
+  </Flex>
+</Flex>
+
 
       <SimpleGrid spacing={6} columns={{ base: 1, md: 2 }}>
         {filteredOrders.map((order) => (
