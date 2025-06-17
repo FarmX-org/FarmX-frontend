@@ -25,7 +25,7 @@ import {
   useToast
 } from '@chakra-ui/react';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { FiLogIn, FiLogOut } from 'react-icons/fi';
+import { FiLogIn, FiLogOut, FiMessageSquare} from 'react-icons/fi';
 import { FaBrain } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -165,6 +165,14 @@ const isHandler = user?.roles?.includes('ROLE_HANDLER');
               </Link>
             </Tooltip>
           )}
+          {user && (
+  <Tooltip label="Messages" hasArrow>
+    <Link href="/chatSel" px={2}>
+      <FiMessageSquare size={20} />
+    </Link>
+  </Tooltip>
+)}
+
 
           {user ? (
             <Menu>
