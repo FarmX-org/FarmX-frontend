@@ -25,6 +25,10 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 import { motion } from "framer-motion";
 import { MdDelete, MdEdit, MdMessage } from "react-icons/md";
+import { useDisclosure } from '@chakra-ui/react';
+import FarmRatingModal from "@/components/RatingModal";
+
+
 const MotionCard = motion(Card);
 
 
@@ -33,6 +37,9 @@ const FarmListPage = () => {
   const [loading, setLoading] = useState(true);
   const [deletingFarmId, setDeletingFarmId] = useState<number | null>(null);
   const [soilTypes, setSoilTypes] = useState<Record<number, string>>({});
+const { isOpen, onOpen, onClose } = useDisclosure();
+const [selectedFarm, setSelectedFarm] = useState<any | null>(null);
+
 
   const cancelRef = useRef(null);
 
@@ -284,6 +291,19 @@ useEffect(() => {
                     >
                       Delete
                     </Button>
+                    <Button
+  size="sm"
+  colorScheme="green"
+  variant="outline"
+  onClick={() => {
+    setSelectedFarm(farm);
+    onOpen();
+  }}
+  isDisabled={farm.status === "PENDING"}
+>
+  View Ratings 🌟
+</Button>
+
                   </Flex>
                 </Stack>
               </CardBody>
@@ -291,6 +311,7 @@ useEffect(() => {
           ))}
         </SimpleGrid>
       )}
+      <FarmRatingModal isOpen={isOpen} onClose={onClose} farmId={selectedFarm?.id || ""} farmName={selectedFarm?.name || ""} />
 
       <AlertDialog
         isOpen={!!deletingFarmId}

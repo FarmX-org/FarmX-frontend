@@ -114,17 +114,6 @@ export const Cards = ({
     playFlip();
   };
 
-  const handleRating = (star: number) => {
-    setRating(star);
-    playRating();
-    toast({
-      title: `Thank you for rating ${star}/5! 🌟`,
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-      position: "top",
-    });
-  };
  useEffect(() => {
   if (typeof window !== 'undefined') {
     const roleString = localStorage.getItem('roles');
@@ -192,25 +181,6 @@ export const Cards = ({
           />
           <Stack mt={4} spacing={1} textAlign="center">
             <Text fontWeight="bold" fontSize="lg" color="green.700">{title}</Text>
-
-            {variant === 'product' && (
-              <Flex justify="center" mt={2}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <IconButton
-                    key={star}
-                    aria-label={`Rate ${star}`}
-                    icon={star <= rating ? <MdStar color="#f2f745" size={23} /> : <MdStarBorder color="#f2f745" size={23} />}
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRating(star);
-                    }}
-                    size="sm"
-                    _hover={{ transform: "scale(1.2)" }}
-                  />
-                ))}
-              </Flex>
-            )}
           </Stack>
         </Box>
 
