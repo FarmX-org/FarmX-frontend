@@ -1,8 +1,19 @@
 'use client';
+
 import { useEffect, useState } from 'react';
-import { VStack, Heading, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
+import {
+  VStack,
+  Heading,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Box,
+  Button,
+} from '@chakra-ui/react';
 import { apiRequest } from '@/lib/api';
 import OrderCard from '@/components/OrderList';
+import FarmFeedbackSection from '@/components/FarmFeedbackSection';
+import { MdRateReview } from 'react-icons/md';
 
 interface OrderItemDTO {
   productName: string;
@@ -31,6 +42,8 @@ export default function ConsumerOrdersPage() {
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+
 
   useEffect(() => {
     apiRequest('/orders/consumer')
@@ -50,9 +63,39 @@ export default function ConsumerOrdersPage() {
 
   return (
     <VStack spacing={6} align="stretch" p={5}>
-      <Heading size="lg">My Orders</Heading>
+      <Heading size="lg" textAlign="center">
+        My Orders
+      </Heading>
+
       {orders.map((order) => (
-        <OrderCard key={order.id} type="CONSUMER" order={order} />
+        <Box key={order.id} borderWidth={1} borderRadius="lg" p={4}>
+          <OrderCard type="CONSUMER" order={order} />
+
+         {order.orderStatus === 'DELIVERED' && (
+  <Box mt={4}>
+    <Button
+      size="sm"
+      colorScheme="green"
+      leftIcon={<MdRateReview />}
+      onClick={() =>
+        setExpandedOrderId((prev) => (prev === order.id ? null : order.id))
+      }
+    >
+      {expandedOrderId === order.id ? 'Hide Feedback Form' : 'Rate This Order'}
+    </Button>
+
+    {expandedOrderId === order.id && (
+      <Box mt={4}>
+        <FarmFeedbackSection
+          farmOrders={order.farmOrders}
+          orderId={order.id}
+        />
+      </Box>
+    )}
+  </Box>
+)}
+
+        </Box>
       ))}
     </VStack>
   );
