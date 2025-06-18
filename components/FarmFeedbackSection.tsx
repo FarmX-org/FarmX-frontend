@@ -8,15 +8,18 @@ import {
   Button,
   Heading,
   Flex,
+  useToast,
 } from '@chakra-ui/react';
 import { FaStar } from 'react-icons/fa';
 import { useState } from 'react';
+import { apiRequest } from '@/lib/api';
 
 interface FarmOrderDTO {
   farmId: number;
   farmName: string;
   items: {
     productName: string;
+    productId: number;
   }[];
 }
 
@@ -30,22 +33,69 @@ const FarmFeedbackSection = ({ farmOrders, orderId }: Props) => {
   const [farmFeedbacks, setFarmFeedbacks] = useState<Record<number, string>>({});
   const [productRatings, setProductRatings] = useState<Record<string, number>>({});
   const [productFeedbacks, setProductFeedbacks] = useState<Record<string, string>>({});
+  const toast = useToast();
 
-  const handleFarmSubmit = (farmId: number) => {
-    console.log('Farm feedback submitted:', {
-      farmId,
+  const handleFarmSubmit = async (farmId: number) => {
+    const farm = farmOrders.find((f) => f.farmId === farmId);
+    const payload = {
+      orderId,
+      feedbackType: 'FARM',
       rating: farmRatings[farmId],
-      feedback: farmFeedbacks[farmId],
-    });
+      comment: farmFeedbacks[farmId] || '',
+      farmId,
+      farmName: farm?.farmName || '',
+    };
+
+    try {
+      await apiRequest('/feedback', 'POST', payload);
+      toast({
+        title: 'Feedback submitted.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch {
+      toast({
+        title: 'Failed to submit feedback.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
-  const handleProductSubmit = (farmId: number, productName: string) => {
-    console.log('Product feedback submitted:', {
+  const handleProductSubmit = async (
+    farmId: number,
+    productId: number,
+    productName: string
+  ) => {
+    const key = `${farmId}-${productName}`;
+    const payload = {
+      orderId,
+      feedbackType: 'PRODUCT',
+      rating: productRatings[key],
+      comment: productFeedbacks[key] || '',
       farmId,
+      productId,
       productName,
-      rating: productRatings[`${farmId}-${productName}`],
-      feedback: productFeedbacks[`${farmId}-${productName}`],
-    });
+    };
+
+    try {
+      await apiRequest('/feedback', 'POST', payload);
+      toast({
+        title: 'Product feedback submitted.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch {
+      toast({
+        title: 'Failed to submit product feedback.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -120,7 +170,7 @@ const FarmFeedbackSection = ({ farmOrders, orderId }: Props) => {
                     mt={1}
                     colorScheme="green"
                     onClick={() =>
-                      handleProductSubmit(farmOrder.farmId, item.productName)
+                      handleProductSubmit(farmOrder.farmId, item.productId, item.productName)
                     }
                     isDisabled={!productRatings[key]}
                   >

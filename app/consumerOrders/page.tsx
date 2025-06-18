@@ -16,6 +16,7 @@ import FarmFeedbackSection from '@/components/FarmFeedbackSection';
 import { MdRateReview } from 'react-icons/md';
 
 interface OrderItemDTO {
+  productId: number;
   productName: string;
   quantity: number;
   price: number;
