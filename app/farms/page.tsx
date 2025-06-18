@@ -311,7 +311,14 @@ useEffect(() => {
           ))}
         </SimpleGrid>
       )}
-      <FarmRatingModal isOpen={isOpen} onClose={onClose} farmId={selectedFarm?.id || ""} farmName={selectedFarm?.name || ""} />
+{selectedFarm && (
+  <FarmRatingModal
+    isOpen={isOpen}
+    onClose={onClose}
+    farmId={selectedFarm.id}
+    farmName={selectedFarm.name}
+  />
+)}
 
       <AlertDialog
         isOpen={!!deletingFarmId}

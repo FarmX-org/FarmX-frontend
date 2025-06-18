@@ -35,7 +35,6 @@ export default function RootLayout({
       <body className={inter.variable}>
         <ChakraProvider>
           <Navbar />
-            <ChatListener /> 
           {!hideNotifications ? (
             <Notifications>{children}</Notifications>
           ) : (

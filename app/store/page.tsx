@@ -26,6 +26,8 @@ interface Product {
   unit: string;
   quantity: number;
   description: string;
+  rating?: number;
+  ratingCount?: number;
 }
 
 const StorePage = () => {
@@ -36,7 +38,7 @@ const StorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [flyingItem, setFlyingItem] = useState<null | Product>(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
-    const [isConsumer, setIsConsumer] = useState(false);
+  const [isConsumer, setIsConsumer] = useState(false);
   
 
 
@@ -47,6 +49,7 @@ const StorePage = () => {
     try {
 const data = await apiRequest("/products/store" );
     console.log("Fetched products:", data); 
+    
 
       const formattedProducts = data.map((product: any) => ({
   id: product.id,
@@ -59,6 +62,8 @@ const data = await apiRequest("/products/store" );
   unit: product.unit || "",
   quantity: product.quantity || 0,
   description: product.description || "",
+  rating: product.rating,           
+  ratingCount: product.ratingCount  
 }));
 
       setProducts(formattedProducts);
@@ -212,6 +217,9 @@ const data = await apiRequest("/products/store" );
   unit={product.unit}
   variant="product"
   onAddToCart={handleAddToCart}
+  rating={product.rating}
+  ratingCount={product.ratingCount}
+
 />
 
           ))}

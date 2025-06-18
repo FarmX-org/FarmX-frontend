@@ -27,6 +27,7 @@ const navLinks = [
   { label: 'Orders', icon: FiShoppingBag, href: '/admin/orders' },
   { label: 'Products', icon: FiShoppingBag, href: '/admin/products' },
   { label: 'Reports', icon: FiBarChart2, href: '/admin/reports' },
+  { label: 'feedback', icon: FiBarChart2, href: '/admin/feedback' },
 ];
 
 const AdminSidebar = () => {
