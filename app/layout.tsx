@@ -8,6 +8,7 @@ import Notifications from "@/components/Notifications";
 import Footer from "@/components/Footer";
 import "leaflet/dist/leaflet.css";
 import { useState , useEffect} from "react";
+import ChatListener from "@/components/ChatListener"; 
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className={inter.variable}>
         <ChakraProvider>
           <Navbar />
+            <ChatListener /> 
           {!hideNotifications ? (
             <Notifications>{children}</Notifications>
           ) : (

@@ -25,11 +25,25 @@ import {
   useToast
 } from '@chakra-ui/react';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { FiLogIn, FiLogOut, FiMessageSquare} from 'react-icons/fi';
+import { FiLogIn, FiLogOut, FiMessageSquare,FiBell} from 'react-icons/fi';
 import { FaBrain } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getTokenExpiration } from './utils/jwt';
+import { onSnapshot, collection, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase"; 
+import ChatListener from "@/components/ChatListener";
+import { keyframes } from "@emotion/react";
+const shake = keyframes`
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0deg); }
+`;
+
+const shakeAnimation = `${shake} 0.6s infinite`;
+
 
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -49,6 +63,7 @@ export default function Navbar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
   const toast = useToast();
+const [hasNewMessages, setHasNewMessages] = useState(false);
 
 
   const [user, setUser] = useState<{ name: string; avatarUrl: string; roles: string[] } | null>(null);
@@ -142,6 +157,50 @@ const isHandler = user?.roles?.includes('ROLE_HANDLER');
     ...(isHandler ? handlerLinks : []),
   ];
 
+ useEffect(() => {
+  const userData = localStorage.getItem("user");
+  if (!userData) return;
+
+  let currentUser;
+  try {
+    currentUser = JSON.parse(userData);
+    if (!currentUser?.username) return;
+  } catch (e) {
+    console.error("Failed to parse user data", e);
+    return;
+  }
+
+  const chatsRef = collection(db, "chats");
+
+  const unsubscribe = onSnapshot(
+    query(chatsRef, where("participants", "array-contains", currentUser.username)),
+    (snapshot) => {
+      let foundNewMessage = false;
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const messages = data.messages || [];
+
+        if (Array.isArray(messages) && messages.length > 0) {
+          const lastMessage = messages[messages.length - 1];
+
+          if (
+            lastMessage.sender !== currentUser.username &&
+            (!lastMessage.seenBy || !lastMessage.seenBy.includes(currentUser.username))
+          ) {
+            foundNewMessage = true;
+          }
+        }
+      });
+
+      setHasNewMessages(foundNewMessage);
+    }
+  );
+
+  return () => unsubscribe();
+}, []);
+
+
   return (
     <Box bg="green.500" px={4} boxShadow="sm" position="fixed" top="0" w="100%" zIndex="1000">
       <Flex h={16} alignItems="center" justifyContent="space-between">
@@ -167,10 +226,18 @@ const isHandler = user?.roles?.includes('ROLE_HANDLER');
           )}
           {user && (
   <Tooltip label="Messages" hasArrow>
-    <Link href="/chatSel" px={2}>
-      <FiMessageSquare size={20} />
-    </Link>
-  </Tooltip>
+  <Link href="/chatSel" px={2} position="relative">
+    {hasNewMessages ? (
+      <Box animation={shakeAnimation}>
+        <FiMessageSquare size={22} color="white" />
+      </Box>
+    ) : (
+      <FiMessageSquare size={22} />
+    )}
+  </Link>
+</Tooltip>
+
+
 )}
 
 
@@ -250,6 +317,8 @@ const isHandler = user?.roles?.includes('ROLE_HANDLER');
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+            <ChatListener onNewMessage={() => setHasNewMessages(true)} />
+
     </Box>
   );
 }
