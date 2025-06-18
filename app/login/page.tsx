@@ -157,6 +157,12 @@ const LoginPage = () => {
                 Sign up
               </Link>
             </Text>
+            <Text textAlign="center" fontSize="sm">
+              <Link as={NextLink} href="/reset-password" color="green.500" fontWeight="bold">
+                Forget Password ?
+              </Link>
+            </Text>
+    
           </Stack>
         </form>
       </Box>

@@ -186,13 +186,17 @@ useEffect(() => {
         <Text>No farms found. Add your first farm!</Text>
       ) : (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-          {farms.map((farm, i) => (
+          {farms
+                .filter((farm) => farm.status !== "REJECTED")
+                .map((farm, i) => (
+
             <MotionCard
               key={farm.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              bg="whiteAlpha.800"
+              bg={farm.status === "PENDING" ? "gray.100" : "whiteAlpha.800"}
+
               backdropFilter="blur(10px)"
               boxShadow="lg"
               borderRadius="2xl"
@@ -201,6 +205,16 @@ useEffect(() => {
             >
               <CardBody p={4}>
                 <Stack spacing={3}>
+                  <Text fontSize="sm" color={farm.status === "PENDING" ? "orange.500" : "green.600"}>
+                   🕒<strong>Status:</strong> {farm.status}
+                  </Text>
+                  {farm.status === "PENDING" && (
+                 <Box bg="orange.100" color="orange.700" px={2} py={1} borderRadius="md" fontSize="xs" fontWeight="bold" width="fit-content">
+                      ⏳ Pending Approval
+                  </Box>
+                     )}
+
+
                   {farm.licenseDocumentUrl && (
                     <Box borderRadius="xl" overflow="hidden" height="180px">
                       <img
@@ -230,6 +244,8 @@ useEffect(() => {
                       size="sm"
                       colorScheme="green"
                       onClick={() => router.push(`/farms/${farm.id}/crops`)}
+                      isDisabled={farm.status === "PENDING"}
+
                     >
                       View Crops 🌱
                     </Button>
@@ -241,6 +257,8 @@ useEffect(() => {
     variant="outline"
     leftIcon={<MdMessage />}
     onClick={() => router.push(`/farms/${farm.id}/farmOrders`)}
+    isDisabled={farm.status === "PENDING"}
+
   >
     Orders
   </Button>
@@ -250,6 +268,8 @@ useEffect(() => {
                       colorScheme="green"
                       onClick={() => handleEditFarm(farm.id)}
                       leftIcon={<MdEdit />}
+                      isDisabled={farm.status === "PENDING"}
+
                     >
                       Edit
                     </Button>
@@ -259,6 +279,8 @@ useEffect(() => {
                       colorScheme="green"
                       onClick={() => setDeletingFarmId(farm.id)}
                       leftIcon={<MdDelete />}
+                      isDisabled={farm.status === "PENDING"}
+
                     >
                       Delete
                     </Button>
