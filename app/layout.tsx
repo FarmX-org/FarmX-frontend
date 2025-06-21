@@ -4,10 +4,10 @@ import { Inter } from "next/font/google";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { ChakraProvider } from "@chakra-ui/react";
-import Notifications from "@/components/Notifications";
+import NotificationsContainer from "@/components/NotificationsContainer";
 import Footer from "@/components/Footer";
 import "leaflet/dist/leaflet.css";
-import { useState , useEffect} from "react";
+import { useState, useEffect } from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,13 +21,17 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-   useEffect(() => {
+
+  useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token); 
+    setIsLoggedIn(!!token);
   }, []);
 
-
-  const hideNotifications = pathname === "/login" || pathname === "/signup"|| !isLoggedIn || pathname === "/admin" ;
+  const hideNotifications =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    !isLoggedIn ||
+    pathname === "/admin";
 
   return (
     <html lang="en">
@@ -35,7 +39,7 @@ export default function RootLayout({
         <ChakraProvider>
           <Navbar />
           {!hideNotifications ? (
-            <Notifications>{children}</Notifications>
+            <NotificationsContainer>{children}</NotificationsContainer>
           ) : (
             children
           )}
