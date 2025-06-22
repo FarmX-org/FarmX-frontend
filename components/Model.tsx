@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import { useEffect, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "https://github.com/FarmX-org/FarmX-frontend/releases/download/v1.0.0/scenewithanimal.glb";
-
-
+const MODEL_URL = "/api/proxy-glb";
 
 const Model = () => {
   const router = useRouter();
@@ -27,15 +25,12 @@ const Model = () => {
         child.name === "Cube029_wall_texture_0"
       ) {
         child.userData.link = "/store";
-      }
-      else if (
+      } else if (
         child instanceof THREE.Mesh &&
         child.name === "Ground_14_-_Default_0"
-      ) 
-      {
+      ) {
         child.userData.link = "/profile";
       }
-        
     });
   }, [optimizedScene]);
 
