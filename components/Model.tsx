@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import { useEffect, useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
@@ -7,7 +7,6 @@ import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
 const MODEL_URL = "/images/scenewithanimal.glb";
-
 
 const Model = () => {
   const router = useRouter();
