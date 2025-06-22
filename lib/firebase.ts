@@ -1,8 +1,6 @@
 // src/firebase/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
-
-import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -23,7 +21,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 const messaging = getMessaging(app);
 const db = getFirestore(app)
