@@ -64,8 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const categories = [
     { label: "Vegetables", icon: "/images/vegetable1.png" },
     { label: "Fruits", icon: "/images/fruit.png" },
-    { label: "Grains", icon: "/images/rice.png" },
-    { label: "Herbs", icon: "/images/rosemary.png" },
+    { label: "Field-Crops", icon: "/images/rice.png" },
   ];
 
   const SidebarContent = () => (
