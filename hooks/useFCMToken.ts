@@ -1,7 +1,7 @@
 
 // hooks/useFCMToken.ts
 import { useEffect } from "react";
-import { messaging } from "@/firebase/firebase";
+import { messaging } from "@/lib/firebase";
 import { getToken, onMessage } from "firebase/messaging";
 import { apiRequest } from "@/lib/api";
 
