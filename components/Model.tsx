@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "/api/proxy-glb";
+const MODEL_URL = "/api/model";
 
 const Model = () => {
   const router = useRouter();
