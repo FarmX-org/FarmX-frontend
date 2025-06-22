@@ -57,37 +57,49 @@ export default function AdminPlantedCropsDashboard() {
   const toast = useToast();
 
   const fetchPlantedCrops = async () => {
-    try {
-      setLoading(true);
-      const plantedCropsData = await apiRequest("/planted-crops/by-farmer", "GET");
-      const cropsList = await apiRequest("/crops", "GET");
-      setAllCrops(cropsList);
+  try {
+    setLoading(true);
+    const plantedCropsData = await apiRequest("/planted-crops/all", "GET");
+    const cropsList = await apiRequest("/crops", "GET");
+    setAllCrops(cropsList);
 
-      const cropMap = new Map<number, string>();
-      cropsList.forEach((crop: BaseCrop) => {
-        cropMap.set(crop.id, crop.name);
-      });
+    const cropMap = new Map<number, string>();
+    cropsList.forEach((crop: BaseCrop) => {
+      cropMap.set(crop.id, crop.name);
+    });
 
-      const merged: FarmCropsDTO[] = plantedCropsData.map((farm: any) => ({
-        farmId: farm.farmId,
-        farmName: farm.farmName,
-        plantedCrops: farm.plantedCrops.map((crop: any) => ({
-          ...crop,
-          name: cropMap.get(crop.cropId) || "Unknown Crop",
-        })),
-      }));
+    const grouped: Record<number, PlantedCropDTO[]> = {};
+    plantedCropsData.forEach((crop: any) => {
+      const cropWithName = {
+        ...crop,
+        name: cropMap.get(crop.cropId) || "Unknown Crop",
+      };
+      if (!grouped[crop.farmId]) {
+        grouped[crop.farmId] = [];
+      }
+      grouped[crop.farmId].push(cropWithName);
+    });
 
-      setFarmCrops(merged);
-    } catch (error: any) {
-      toast({
-        title: "Failed to fetch planted crops",
-        description: error.message,
-        status: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const merged: FarmCropsDTO[] = Object.entries(grouped).map(
+      ([farmIdStr, crops]) => ({
+        farmId: Number(farmIdStr),
+        farmName: `Farm ${farmIdStr}`,
+        plantedCrops: crops,
+      })
+    );
+
+    console.log("Merged data:", merged);
+    setFarmCrops(merged);
+  } catch (error: any) {
+    toast({
+      title: "Failed to fetch planted crops",
+      description: error.message,
+      status: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this planted crop?")) return;

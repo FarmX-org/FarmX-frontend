@@ -7,7 +7,9 @@ import { ChakraProvider } from "@chakra-ui/react";
 import NotificationsContainer from "@/components/NotificationsContainer";
 import Footer from "@/components/Footer";
 import "leaflet/dist/leaflet.css";
-import { useState, useEffect } from "react";
+
+import { useState , useEffect} from "react";
+import ChatListener from "@/components/ChatListener"; 
 
 const inter = Inter({
   variable: "--font-inter",

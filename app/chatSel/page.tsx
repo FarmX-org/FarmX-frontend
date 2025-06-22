@@ -24,6 +24,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAllUsers } from "@/lib/users";
+import { useToast } from "@chakra-ui/react";
+
 
 interface Message {
   id: string;
@@ -39,7 +41,7 @@ export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-
+  const toast = useToast();
   const router = useRouter();
 
   const bgColor = "#f0fdf4";

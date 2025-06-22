@@ -23,6 +23,7 @@ import {
 import { MdAddShoppingCart, MdStar, MdStarBorder, MdShoppingCart, MdEdit, MdDelete, MdLocalShipping } from "react-icons/md";
 import { motion } from "framer-motion";
 import useSound from 'use-sound';
+import { apiRequest } from "@/lib/api";
 
 
 
@@ -47,6 +48,9 @@ interface CardProps {
   onAddToCart?: (id: number, quantity: number) => void;
   unit?: string; 
   category?: string;
+  rating?: number;
+  ratingCount?: number;
+  
 
   // planted فقط
   plantedDate?: string;
@@ -88,6 +92,8 @@ export const Cards = ({
   unit,
   cropId,
   category,
+  ratingCount,
+  rating,
   onAddToCart,
   onDelete,
   onEdit,
@@ -100,7 +106,6 @@ export const Cards = ({
   const [playAddToCart] = useSound(addToCartSound);
   const [playRating] = useSound(ratingSound);
   const [selectedQty, setSelectedQty] = useState(1);
-  const [rating, setRating] = useState(0);
   const toast = useToast();
   const [isConsumer, setIsConsumer] = useState(false);
 
@@ -112,26 +117,15 @@ export const Cards = ({
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
     playFlip();
+    console.log("rating", rating);
   };
 
-  const handleRating = (star: number) => {
-    setRating(star);
-    playRating();
-    toast({
-      title: `Thank you for rating ${star}/5! 🌟`,
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-      position: "top",
-    });
-  };
  useEffect(() => {
   if (typeof window !== 'undefined') {
     const roleString = localStorage.getItem('roles');
     if (roleString) {
       try {
         const roles = JSON.parse(roleString);
-        console.log("Parsed roles:", roles);
         setIsConsumer(Array.isArray(roles) && roles.includes('ROLE_CONSUMER'));
       } catch (e) {
         console.error("Failed to parse roles from localStorage", e);
@@ -192,25 +186,6 @@ export const Cards = ({
           />
           <Stack mt={4} spacing={1} textAlign="center">
             <Text fontWeight="bold" fontSize="lg" color="green.700">{title}</Text>
-
-            {variant === 'product' && (
-              <Flex justify="center" mt={2}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <IconButton
-                    key={star}
-                    aria-label={`Rate ${star}`}
-                    icon={star <= rating ? <MdStar color="#f2f745" size={23} /> : <MdStarBorder color="#f2f745" size={23} />}
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRating(star);
-                    }}
-                    size="sm"
-                    _hover={{ transform: "scale(1.2)" }}
-                  />
-                ))}
-              </Flex>
-            )}
           </Stack>
         </Box>
 
@@ -314,13 +289,26 @@ export const Cards = ({
       )}
     </Stack>
 
-    <Flex gap={2} justify="center">
-      <Badge colorScheme="purple">Organic</Badge>
-    </Flex>
+   <Flex justify="center" align="center" mt={1}>
+  {[1, 2, 3, 4, 5].map((i) => (
+    <Box key={i} color={i <= Math.round(rating ?? 0) ? "yellow.400" : "gray.300"}>
+      {i <= Math.round(rating ?? 0) ? <MdStar /> : <MdStarBorder />}
+    </Box>
+  ))}
 
-    <Text fontSize="xs" color="gray.500" textAlign="center">
-      ⭐ Rated {rating || 4.2}/5 by 120 users
+  <Text ml={2} fontSize="sm" color="gray.600">
+    {typeof rating === "number" && !isNaN(rating) ? rating.toFixed(1) : "No ratings"}
+  </Text>
+
+  {ratingCount !== undefined && (
+    <Text ml={1} fontSize="xs" color="gray.500">
+      ({ratingCount} ratings)
     </Text>
+  )}
+</Flex>
+
+
+
 
     {isConsumer &&<Flex align="center" gap={2} justify="center">
       <Text fontSize="sm">Quantity:</Text>

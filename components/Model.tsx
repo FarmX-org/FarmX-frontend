@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "/images/scenewithanimal.glb";
+
+const MODEL_URL = "/api/model";
 
 const Model = () => {
   const router = useRouter();
@@ -19,12 +20,17 @@ const Model = () => {
   useEffect(() => {
     optimizedScene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.name === "Ground_barn_2_0") {
-        child.userData.link = "/cropShowcase";
+        child.userData.link = "/crops";
       } else if (
         child instanceof THREE.Mesh &&
         child.name === "Cube029_wall_texture_0"
       ) {
         child.userData.link = "/store";
+      } else if (
+        child instanceof THREE.Mesh &&
+        child.name === "Ground_14_-_Default_0"
+      ) {
+        child.userData.link = "/profile";
       }
     });
   }, [optimizedScene]);

@@ -17,4 +17,6 @@ export const fetchPosts = async () => {
   const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
 };
+

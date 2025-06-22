@@ -15,6 +15,7 @@
     "@react-spring/three": "^9.7.5",
     "@react-three/drei": "^9.85.4",
     "@react-three/fiber": "^8.15.12",
+    "dayjs": "^1.11.13",
     "firebase": "^11.9.1",
     "framer-motion": "^12.6.5",
     "leaflet": "^1.9.4",

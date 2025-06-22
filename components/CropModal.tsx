@@ -9,6 +9,7 @@ interface BaseCrop {
   id: number;
   name: string;
   category: string;
+  imageUrl?: string;
 }
 
 interface CropModalProps {
@@ -133,6 +134,7 @@ const CropModal: React.FC<CropModalProps> = ({
     cropId: selected.id,
     name: selected.name,
     category: selected.category,
+    imageUrl: selected.imageUrl || "",
   });
 }}
 
