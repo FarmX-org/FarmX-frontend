@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { ThreeEvent } from "@react-three/fiber";
 
-const MODEL_URL = "/images/scenewithanimal.glb";
+const MODEL_URL =
+  "https://github.com/FarmX-org/FarmX-frontend/releases/download/v1.0.0/scenewithanimal.glb";
+
 
 
 const Model = () => {
