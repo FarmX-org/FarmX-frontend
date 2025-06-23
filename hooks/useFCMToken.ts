@@ -1,15 +1,12 @@
 // hooks/useFCMToken.ts
 import { useEffect } from "react";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { messaging } from "@/lib/firebase";
+import { getToken, onMessage } from "firebase/messaging";
 import { apiRequest } from "@/lib/api";
-import { app } from "@/lib/firebase";
+
 
 export default function useFCMToken(onNotificationReceived: (payload: any) => void) {
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const messaging = getMessaging(app); // ✅ هيك كلشي واضح لـ TypeScript
-
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         getToken(messaging, {

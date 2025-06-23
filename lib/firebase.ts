@@ -1,8 +1,15 @@
-// src/lib/firebase.ts
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import type { Messaging } from "firebase/messaging"; // <-- النوع هنا
 
+import { getFirestore } from "firebase/firestore";
+
+
+import { initializeApp } from "firebase/app"
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCJin09XkeKkgNeWwi9WcwS5nLCgkSWTlc",
   authDomain: "farmx-org.firebaseapp.com",
@@ -10,23 +17,13 @@ const firebaseConfig = {
   storageBucket: "farmx-org.firebasestorage.app",
   messagingSenderId: "560112655531",
   appId: "1:560112655531:web:31316c4289249679922bee",
-  measurementId: "G-08959EBY7N",
+  measurementId: "G-08959EBY7N"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+const messaging = getMessaging(app);
 const db = getFirestore(app);
 
-let analytics: any = null;
-let messaging: Messaging | null = null; // 🔥 هذا المهم
-
-if (typeof window !== "undefined") {
-  import("firebase/analytics").then(({ getAnalytics }) => {
-    analytics = getAnalytics(app);
-  });
-
-  import("firebase/messaging").then(({ getMessaging }) => {
-    messaging = getMessaging(app);
-  });
-}
-
-export { app, db, analytics, messaging };
+export { messaging, getToken, db,onMessage };

@@ -65,23 +65,25 @@ const PostFeed = () => {
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData: Post[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Post));
+      const postsData: Post[] = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Post)
+      );
       setPosts(postsData);
       setLoading(false);
 
-      postsData.forEach(post => {
+      postsData.forEach((post) => {
         const commentsRef = collection(db, "posts", post.id, "comments");
         onSubSnapshot(commentsRef, (snap) => {
-          const postComments: Comment[] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
-          setComments(prev => ({ ...prev, [post.id]: postComments }));
+          const postComments: Comment[] = snap.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() } as Comment)
+          );
+          setComments((prev) => ({ ...prev, [post.id]: postComments }));
         });
       });
     });
 
     return () => unsubscribe();
   }, []);
-
- 
 
   const handleDelete = async (postId: string) => {
     if (!confirm("Are you sure you want to delete this post?")) return;
@@ -115,29 +117,44 @@ const PostFeed = () => {
   return (
     <Box maxW="600px" mx="auto" mb={10}>
       {posts.map((post) => (
-        <Box key={post.id} p={4} mb={4} bg="white" borderRadius="lg" boxShadow="base">
+        <Box
+          key={post.id}
+          p={4}
+          mb={4}
+          bg="white"
+          borderRadius="lg"
+          boxShadow="base"
+        >
           <Flex align="center" mb={2} gap={3} justify="space-between">
             <Flex align="center" gap={3}>
               <Avatar src={post.avatarUrl} name={post.userName} size="sm" />
               <Box>
                 <Text fontWeight="semibold">{post.userName}</Text>
                 <Text fontSize="xs" color="gray.500">
-                  {post.createdAt?.seconds ? dayjs(post.createdAt.seconds * 1000).fromNow() : "now"}
+                  {post.createdAt?.seconds
+                    ? dayjs(post.createdAt.seconds * 1000).fromNow()
+                    : "now"}
                 </Text>
               </Box>
             </Flex>
             {user?.id === post.userId && (
-              <Button size="sm" variant="ghost" colorScheme="red" onClick={() => handleDelete(post.id)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                colorScheme="red"
+                onClick={() => handleDelete(post.id)}
+              >
                 Delete
               </Button>
             )}
           </Flex>
-          <Text mb={2} whiteSpace="pre-wrap">{post.content}</Text>
-
+          <Text mb={2} whiteSpace="pre-wrap">
+            {post.content}
+          </Text>
 
           {/* Comments */}
           <Box mt={3}>
-            {comments[post.id]?.map(comment => (
+            {comments[post.id]?.map((comment) => (
               <Box key={comment.id} p={2} bg="gray.50" borderRadius="md" mb={2}>
                 <Text fontWeight="bold">{comment.userName}</Text>
                 <Text>{comment.text}</Text>
@@ -146,10 +163,20 @@ const PostFeed = () => {
             <Textarea
               placeholder="Add a comment..."
               value={newComment[post.id] || ""}
-              onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
+              onChange={(e) =>
+                setNewComment((prev) => ({
+                  ...prev,
+                  [post.id]: e.target.value,
+                }))
+              }
               size="sm"
             />
-            <Button onClick={() => handleComment(post.id)} size="sm" mt={1} colorScheme="green">
+            <Button
+              onClick={() => handleComment(post.id)}
+              size="sm"
+              mt={1}
+              colorScheme="green"
+            >
               Comment
             </Button>
           </Box>
