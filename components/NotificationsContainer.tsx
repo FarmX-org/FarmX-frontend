@@ -1,5 +1,6 @@
 // components/NotificationsContainer.tsx
-import { useEffect, useState } from "react";
+"use client";
+import { use, useEffect, useState } from "react";
 import Notifications from "@/components/Notifications";
 import { useNotificationStore } from "@/stores/notificationStore";
 import useFCMToken from "@/hooks/useFCMToken";
