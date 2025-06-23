@@ -10,6 +10,8 @@ import {
   Button,
   Textarea,
   useToast,
+  HStack,
+  IconButton,
 } from "@chakra-ui/react";
 import {
   collection,
@@ -17,22 +19,21 @@ import {
   orderBy,
   onSnapshot,
   doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
   deleteDoc,
   addDoc,
   serverTimestamp,
   onSnapshot as onSubSnapshot,
 } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { FiTrash2 } from "react-icons/fi";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { db } from "@/lib/firebase";
+
 dayjs.extend(relativeTime);
 
 interface Post {
   id: string;
-  userName: string;
+  username: string;
   avatarUrl: string;
   userId: string;
   content: string;
@@ -42,7 +43,7 @@ interface Post {
 
 interface Comment {
   id: string;
-  userName: string;
+  username: string;
   text: string;
   createdAt: any;
 }
@@ -99,7 +100,7 @@ const PostFeed = () => {
     if (!user || !newComment[postId]?.trim()) return;
     const commentRef = collection(db, "posts", postId, "comments");
     await addDoc(commentRef, {
-      userName: user.name,
+      username: user.name,
       text: newComment[postId],
       createdAt: serverTimestamp(),
     });
@@ -115,49 +116,65 @@ const PostFeed = () => {
   }
 
   return (
-    <Box maxW="600px" mx="auto" mb={10}>
+    <Box maxW="650px" mx="auto" mb={10} px={2}>
       {posts.map((post) => (
         <Box
           key={post.id}
-          p={4}
-          mb={4}
+          p={5}
+          mb={6}
           bg="white"
-          borderRadius="lg"
-          boxShadow="base"
+          borderRadius="2xl"
+          boxShadow="md"
+          border="1px solid"
+          borderColor="gray.100"
         >
-          <Flex align="center" mb={2} gap={3} justify="space-between">
-            <Flex align="center" gap={3}>
-              <Avatar src={post.avatarUrl} name={post.userName} size="sm" />
+          <Flex align="center" justify="space-between" mb={3}>
+            <HStack spacing={3}>
+              <Avatar src={post.avatarUrl} name={post.username} size="sm" />
               <Box>
-                <Text fontWeight="semibold">{post.userName}</Text>
+                <Text fontWeight="bold" fontSize="md">
+                  {post.username}
+                </Text>
                 <Text fontSize="xs" color="gray.500">
                   {post.createdAt?.seconds
                     ? dayjs(post.createdAt.seconds * 1000).fromNow()
                     : "now"}
                 </Text>
               </Box>
-            </Flex>
-            {user?.id === post.userId && (
-              <Button
+            </HStack>
+            {user?.name === post.username && (
+              <IconButton
+                icon={<FiTrash2 />}
+                aria-label="Delete"
                 size="sm"
                 variant="ghost"
                 colorScheme="red"
                 onClick={() => handleDelete(post.id)}
-              >
-                Delete
-              </Button>
+              />
             )}
           </Flex>
-          <Text mb={2} whiteSpace="pre-wrap">
+
+          <Text mb={4} fontSize="md" whiteSpace="pre-wrap">
             {post.content}
           </Text>
 
-          {/* Comments */}
           <Box mt={3}>
             {comments[post.id]?.map((comment) => (
-              <Box key={comment.id} p={2} bg="gray.50" borderRadius="md" mb={2}>
-                <Text fontWeight="bold">{comment.userName}</Text>
-                <Text>{comment.text}</Text>
+              <Box
+                key={comment.id}
+                p={3}
+                bg="gray.50"
+                borderRadius="md"
+                mb={2}
+                border="1px solid"
+                borderColor="gray.200"
+              >
+                <Text fontWeight="medium" fontSize="sm">
+                  {comment.username}
+                </Text>
+                <Text fontSize="sm" color="gray.700">
+                  {comment.text}
+                </Text>
               </Box>
             ))}
             <Textarea
@@ -170,15 +187,21 @@ const PostFeed = () => {
                 }))
               }
               size="sm"
+              borderRadius="lg"
+              mt={2}
+              mb={1}
             />
-            <Button
-              onClick={() => handleComment(post.id)}
-              size="sm"
-              mt={1}
-              colorScheme="green"
-            >
-              Comment
-            </Button>
+            <Flex justify="flex-end">
+              <Button
+                onClick={() => handleComment(post.id)}
+                size="sm"
+                mt={1}
+                colorScheme="green"
+                borderRadius="full"
+              >
+                Comment
+              </Button>
+            </Flex>
           </Box>
         </Box>
       ))}
