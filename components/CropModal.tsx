@@ -4,6 +4,8 @@ import {
   ModalBody, ModalFooter, Input, FormControl, FormLabel,
   Grid, GridItem, Button, Box, Image, useToast, Select,Switch
 } from "@chakra-ui/react";
+import { apiRequest } from "@/lib/api";
+
 
 interface BaseCrop {
   id: number;
@@ -30,6 +32,11 @@ const CropModal: React.FC<CropModalProps> = ({
   allCrops
 }) => {
   const toast = useToast();
+  const [useAI, setUseAI] = useState(false);
+  const [soilType, setSoilType] = useState("");
+  const [season, setSeason] = useState("");
+  const [aiSuggestions, setAiSuggestions] = useState<BaseCrop[]>([]);
+
 
   const [cropData, setCropData] = useState<any>({
     cropId: "",
@@ -117,36 +124,104 @@ const CropModal: React.FC<CropModalProps> = ({
         <ModalHeader>{selectedCrop ? "Edit Crop" : "Add New Crop"}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          <FormControl display="flex" alignItems="center" mb={4}>
+         <FormLabel htmlFor="use-ai" mb="0">Use AI to suggest crop?</FormLabel>
+           <Switch id="use-ai" isChecked={useAI} onChange={(e) => setUseAI(e.target.checked)} />
+             </FormControl>
+
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             <GridItem colSpan={2}>
-              <FormControl isRequired>
-                <FormLabel>Crop</FormLabel>
-               <Select
-  placeholder="Select a crop"
-  value={cropData.cropId}
-  onChange={(e) => {
-  const selectedId = Number(e.target.value);
-  if (isNaN(selectedId)) return; 
-  const selected = allCrops.find(c => c.id === selectedId);
-  if (!selected) return; 
-  setCropData({
-    ...cropData,
-    cropId: selected.id,
-    name: selected.name,
-    category: selected.category,
-    imageUrl: selected.imageUrl || "",
-  });
-}}
+             {useAI ? (
+  <>
+    <FormControl>
+      <FormLabel>Soil Type</FormLabel>
+      <Input value={soilType} onChange={(e) => setSoilType(e.target.value)} placeholder="e.g., Clay" />
+    </FormControl>
 
->
+    <FormControl>
+      <FormLabel>Season</FormLabel>
+      <Input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="e.g., Summer" />
+    </FormControl>
 
-                  {allCrops.map(crop => (
-                    <option key={crop.id} value={crop.id}>
-                      {crop.name} ({crop.category})
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
+    <Button mt={2} colorScheme="green" onClick={async () => {
+      try {
+        const suggestions = await apiRequest(`/ai/suggest-crops?soilType=${soilType}&season=${season}`, "GET");
+        setAiSuggestions(suggestions);
+        toast({
+          title: "Suggestions received",
+          description: "Choose a crop from the list below.",
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to get suggestions.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }}>Get Suggestions</Button>
+
+    {aiSuggestions.length > 0 && (
+      <FormControl mt={3}>
+        <FormLabel>Select from suggestions</FormLabel>
+        <Select
+          placeholder="Select suggested crop"
+          onChange={(e) => {
+            const selectedId = Number(e.target.value);
+            const selected = aiSuggestions.find(c => c.id === selectedId);
+            if (selected) {
+              setCropData({
+                ...cropData,
+                cropId: selected.id,
+                name: selected.name,
+                category: selected.category,
+                imageUrl: selected.imageUrl || "",
+              });
+            }
+          }}
+        >
+          {aiSuggestions.map(crop => (
+            <option key={crop.id} value={crop.id}>
+              {crop.name} ({crop.category})
+            </option>
+          ))}
+        </Select>
+      </FormControl>
+    )}
+  </>
+) : (
+  <FormControl isRequired>
+    <FormLabel>Crop</FormLabel>
+    <Select
+      placeholder="Select a crop"
+      value={cropData.cropId}
+      onChange={(e) => {
+        const selectedId = Number(e.target.value);
+        const selected = allCrops.find(c => c.id === selectedId);
+        if (selected) {
+          setCropData({
+            ...cropData,
+            cropId: selected.id,
+            name: selected.name,
+            category: selected.category,
+            imageUrl: selected.imageUrl || "",
+          });
+        }
+      }}
+    >
+      {allCrops.map(crop => (
+        <option key={crop.id} value={crop.id}>
+          {crop.name} ({crop.category})
+        </option>
+      ))}
+    </Select>
+  </FormControl>
+)}
+
             </GridItem>
 
             <FormControl>
