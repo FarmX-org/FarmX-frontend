@@ -18,6 +18,7 @@ import {
   useToast,
   Select,
   Switch,
+  Text,
 } from "@chakra-ui/react";
 import { apiRequest } from "@/lib/api";
 
@@ -85,6 +86,11 @@ const CropModal: React.FC<CropModalProps> = ({
     }
   }, [selectedCrop, isOpen, farmId]);
 
+  // لمراقبة تغييرات cropId
+  useEffect(() => {
+    console.log("Selected cropId changed:", cropData.cropId);
+  }, [cropData.cropId]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
@@ -107,7 +113,7 @@ const CropModal: React.FC<CropModalProps> = ({
   const handleSave = () => {
     const cropIdNumber = Number(cropData.cropId);
 
-    if (!cropData.cropId || isNaN(Number(cropData.cropId))) {
+    if (!cropData.cropId || isNaN(cropIdNumber)) {
       toast({
         title: "Missing fields",
         description: "Please select a crop and set planted date.",
@@ -129,7 +135,7 @@ const CropModal: React.FC<CropModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{selectedCrop ? "Edit Crop" : "Add New Crop"}</ModalHeader>
@@ -173,19 +179,41 @@ const CropModal: React.FC<CropModalProps> = ({
                     colorScheme="green"
                     onClick={async () => {
                       try {
-                      const suggestions = await apiRequest(
-  "/recommendations/recommend",
-  "POST",
-  {
-    soilType,
-    season,
-  }
-);
+                        const suggestionsRaw = await apiRequest(
+                          "/recommendations/recommend",
+                          "POST",
+                          {
+                            soilType,
+                            season,
+                          }
+                        );
 
-// لو suggestions مصفوفة خليه هيك، لو عنصر واحد حوّله لمصفوفة بعنصر واحد
-const suggestionsArray = Array.isArray(suggestions) ? suggestions : [suggestions];
+                        console.log("API suggestions raw:", suggestionsRaw);
 
-setAiSuggestions(suggestionsArray);
+                        let suggestionsArray: BaseCrop[] = [];
+
+                        if (Array.isArray(suggestionsRaw)) {
+                          suggestionsArray = suggestionsRaw;
+                        } else if (typeof suggestionsRaw === "string") {
+                          // لو جالك نص، حوّله لكائن يحتوي الاسم فقط
+                          suggestionsArray = [
+                            {
+                              id: -1,
+                              name: suggestionsRaw,
+                              category: "Unknown",
+                            },
+                          ];
+                        } else if (
+                          typeof suggestionsRaw === "object" &&
+                          suggestionsRaw !== null
+                        ) {
+                          // لو كائن واحد فقط حوّله لمصفوفة
+                          suggestionsArray = [suggestionsRaw];
+                        } else {
+                          suggestionsArray = [];
+                        }
+
+                        setAiSuggestions(suggestionsArray);
 
                         toast({
                           title: "Suggestions received",
@@ -213,6 +241,7 @@ setAiSuggestions(suggestionsArray);
                       <FormLabel>Select from suggestions</FormLabel>
                       <Select
                         placeholder="Select suggested crop"
+                        value={cropData.cropId || ""}
                         onChange={(e) => {
                           const selectedId = Number(e.target.value);
                           const selected = aiSuggestions.find(
@@ -243,7 +272,7 @@ setAiSuggestions(suggestionsArray);
                   <FormLabel>Crop</FormLabel>
                   <Select
                     placeholder="Select a crop"
-                    value={cropData.cropId}
+                    value={cropData.cropId || ""}
                     onChange={(e) => {
                       const selectedId = Number(e.target.value);
                       const selected = allCrops.find(
@@ -280,6 +309,7 @@ setAiSuggestions(suggestionsArray);
                 }
               />
             </FormControl>
+
             <GridItem colSpan={2}>
               <FormControl>
                 <FormLabel>Status</FormLabel>

@@ -48,7 +48,7 @@ interface CardProps {
 
   needsFertilization?: boolean; // <== هل النبات يحتاج تسميد
   onFertilize?: (id: number) => void;
-  // product فقط
+  fertilizedAt?: Date;
   price?: number;
   description?: string;
   onAddToCart?: (id: number, quantity: number) => void;
@@ -102,6 +102,9 @@ export const Cards = ({
   onDelete,
   onEdit,
   onSendToStore,
+  needsFertilization,
+  fertilizedAt,
+  onFertilize,
 }: CardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const responsiveWidth = useBreakpointValue({ base: "90%", md: "260px" });
@@ -244,6 +247,14 @@ export const Cards = ({
                   <b>Notes:</b> {notes}
                 </Text>
               )}
+              {fertilizedAt && (
+                <Text>
+                  <b>Last Fertilized:</b>{" "}
+                  {fertilizedAt instanceof Date
+                    ? fertilizedAt.toLocaleDateString()
+                    : new Date(fertilizedAt).toLocaleDateString()}
+                </Text>
+              )}
 
               <Flex justify="center" gap={4} pt={2}>
                 <Tooltip label="Delete Crop" hasArrow>
@@ -306,7 +317,7 @@ export const Cards = ({
                     </Button>
                   </Tooltip>
                 )}
-                {needsFertilization && onFertilize && (
+                {needsFertilization && typeof onFertilize === "function" && (
                   <Tooltip label="Fertilize Me" hasArrow>
                     <Button
                       size="sm"

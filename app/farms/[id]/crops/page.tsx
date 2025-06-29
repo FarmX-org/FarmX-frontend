@@ -29,6 +29,7 @@ interface BaseCrop {
 }
 
 interface Crop extends BaseCrop {
+  needsFertilization: boolean | undefined;
   imageUrl: string;
   quantity: number;
   available: boolean;
@@ -40,6 +41,7 @@ interface Crop extends BaseCrop {
   status?: string;
   cropId: number;
   allCrops: BaseCrop[];
+  fertilizedAt?: string | null;
 }
 
 const peekaboo = keyframes`
@@ -87,11 +89,12 @@ const CropShowcase = () => {
           const cropDetails = cropsList.find(
             (c: BaseCrop) => c.id === planted.cropId
           );
-          console.log("cropId:", planted.cropId);
           return {
             ...planted,
             name: cropDetails?.name || "Unknown",
             category: cropDetails?.category || "Uncategorized",
+            needsFertilization: planted.needsFertilization ?? false, // ✅
+            fertilizedAt: planted.fertilizedAt ?? null, // ✅
           };
         });
 
@@ -266,42 +269,6 @@ const CropShowcase = () => {
         duration: 3000,
         isClosable: true,
       });
-      const handleFertilize = async (id: number) => {
-        try {
-          await apiRequest(`/planted-crops/${id}/fertilize`, "PUT");
-
-          setCropsData((prev) =>
-            prev.map((crop) =>
-              crop.id === id
-                ? {
-                    ...crop,
-                    needsFertilization: false,
-                    fertilizedAt: new Date().toISOString(),
-                  }
-                : crop
-            )
-          );
-
-          toast({
-            title: "Fertilized",
-            description:
-              "Crop fertilization status has been updated successfully 🌱",
-            status: "success",
-            duration: 2500,
-            isClosable: true,
-          });
-        } catch (error) {
-          toast({
-            title: "Fertilization Failed",
-            description:
-              "An error occurred while trying to fertilize the crop.",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
-          console.error(error);
-        }
-      };
     } catch (err) {
       console.error(err);
       toast({
@@ -313,7 +280,41 @@ const CropShowcase = () => {
       });
     }
   };
+  const handleFertilize = async (id: number) => {
+    try {
+      await apiRequest(`/planted-crops/${id}/fertilize`, "PUT");
 
+      setCropsData((prev) =>
+        prev.map((crop) =>
+          crop.id === id
+            ? {
+                ...crop,
+                needsFertilization: false,
+                fertilizedAt: new Date().toISOString(),
+              }
+            : crop
+        )
+      );
+
+      toast({
+        title: "Fertilized",
+        description:
+          "Crop fertilization status has been updated successfully 🌱",
+        status: "success",
+        duration: 2500,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Fertilization Failed",
+        description: "An error occurred while trying to fertilize the crop.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      console.error(error);
+    }
+  };
   const handleUpdateCrop = async (crop: Crop) => {
     try {
       const { id, cropId, name, category, ...rest } = crop;
@@ -411,7 +412,6 @@ const CropShowcase = () => {
           farmId={Number(farmId)}
           allCrops={allCrops}
         />
-
         <Box
           position={"relative"}
           top={{ base: "10px", md: "20px", lg: "40px" }}
@@ -426,7 +426,6 @@ const CropShowcase = () => {
             style={{ width: "100%", height: "auto", zIndex: -1 }}
           />
         </Box>
-
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={1} mt={10}>
           {filteredCrops.map((card) => (
             <Cards
@@ -444,14 +443,17 @@ const CropShowcase = () => {
               farmId={card.farmId}
               cropId={card.cropId}
               variant="planted"
-              needsFertilization={card.needsFertilization} // <== هذه مهمة جداً
+              needsFertilization={card.needsFertilization} // boolean or undefined
+              fertilizedAt={
+                card.fertilizedAt ? new Date(card.fertilizedAt) : undefined
+              }
               onDelete={handleDelete}
               onEdit={() => {
                 setSelectedCrop(card);
                 onOpen();
               }}
               onSendToStore={() => handleOpenSendModal(card)}
-              onFertilize={handleFertilize} // <== اضفت دالة التسميد هنا
+              onFertilize={handleFertilize} // تأكد إنه دالة فعلية
             />
           ))}
         </SimpleGrid>
